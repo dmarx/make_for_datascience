@@ -22,17 +22,22 @@ endif
 #################################################################################
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target
-full_refresh:
+refresh_models:
 	find ./data/processed -type f ! -name '.gitkeep' -exec rm {} +
 	find ./data/external -type f ! -name '.gitkeep' -exec rm {} +
 	find ./data/interim -type f ! -name '.gitkeep' -exec rm {} +
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	$(MAKE) test
 
+## Flush out raw data, , re-run full pipeline via 'test' target
+full_refresh:
+	find ./data/raw -type f ! -name '.gitkeep' -exec rm {} +
+	$(MAKE) test
+
 ## Make Dataset
 data: ./data/processed/train.rdata ./data/processed/test.rdata
 
-./data/processed/train.rdata ./data/processed/test.rdata:
+./data/processed/train.rdata ./data/processed/test.rdata: ./data/raw/iris.rdata
 	Rscript ./src/data/train_test_split.r
 
 ./data/raw/iris.rdata:
@@ -41,11 +46,11 @@ data: ./data/processed/train.rdata ./data/processed/test.rdata
 ## Train logistic regression classifier on training data
 train: ./models/simple_logistic.rdata
 
-./models/simple_logistic.rdata: data
+./models/simple_logistic.rdata: ./data/processed/train.rdata ./data/processed/test.rdata
 	Rscript src/models/train_classifier_logreg.r
 
 ## Score model against test set
-test: ./reports/confusion_metrix.txt
+test: ./models/simple_logistic.rdata ./reports/confusion_metrix.txt
 
 ./reports/confusion_metrix.txt: ./models/simple_logistic.rdata ./data/processed/test.rdata
 	Rscript src/models/eval_model.r

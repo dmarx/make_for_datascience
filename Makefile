@@ -33,8 +33,6 @@ reports/all_models_accuracy.txt: $(r_reports)
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target
 refresh:
 	find ./data/processed -type f ! -name '.gitkeep' -exec rm {} +
-	find ./data/external -type f ! -name '.gitkeep' -exec rm {} +
-	find ./data/interim -type f ! -name '.gitkeep' -exec rm {} +
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	$(MAKE) test
 

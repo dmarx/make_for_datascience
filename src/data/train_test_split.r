@@ -1,10 +1,10 @@
-load("./data/raw/rawdata.rdata")
+load("./data/raw/analyticBaseTable.rdata")
 
-n = nrow(rawdata)
+n = nrow(analyticBaseTable)
 ix = sample(n, .8*n)
 
-train <- rawdata[ix,]
-test  <- rawdata[-ix,]
+train <- analyticBaseTable[ix,]
+test  <- analyticBaseTable[-ix,]
 
 save(train, file="./data/processed/train.rdata")
 save(test, file="./data/processed/test.rdata")

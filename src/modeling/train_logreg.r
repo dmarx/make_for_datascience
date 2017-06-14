@@ -1,6 +1,7 @@
 load("./data/processed/train.rdata")
 
-feats = names(train[,-5])
+target_col_ix = which(names(train) == 'Species')
+feats = names(train[,-target_col_ix])
 train$target = train$Species == 'versicolor'
 
 rhs = paste(feats, collapse=" + ")

@@ -4,18 +4,7 @@
 # GLOBALS                                                                       #
 #################################################################################
 
-PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
-PROJECT_NAME = iris_test
-PYTHON_INTERPRETER = python3
-########R_INTERPRETER = /cygdrive/c/Program\ Files/R/R-3.2.2/bin/R CMD BATCH
 R_INTERPRETER = Rscript
-
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
-endif
 
 #################################################################################
 # COMMANDS                                                                      #

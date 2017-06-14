@@ -1,4 +1,4 @@
-.PHONY: train
+.PHONY: refresh full_refresh
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -34,7 +34,7 @@ models/%.rdata: src/models/train_%.r ./data/processed/train.rdata
 ## Score models against test set
 test: reports/all_models_accuracy.txt
 
-reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata
+reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata src/models/eval_model.r
 	$(R_INTERPRETER) src/models/eval_model.r $<
 
 reports/all_models_accuracy.txt: $(r_reports)
@@ -55,19 +55,18 @@ full_refresh:
 	$(MAKE) test
 
 
+## Make Dataset (assumes a project rule has been defined to generate ./data/raw/raw.rdata
+data: ./data/processed/train.rdata ./data/processed/test.rdata
+
+data/processed/train.rdata data/processed/test.rdata: data/raw/rawdata.rdata
+	$(R_INTERPRETER) src/data/train_test_split.r
+
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
-## Make Dataset
-data: ./data/processed/train.rdata ./data/processed/test.rdata
-
-./data/processed/train.rdata ./data/processed/test.rdata: ./data/raw/iris.rdata
-	$(R_INTERPRETER) ./src/data/train_test_split.r
-
-./data/raw/iris.rdata:
-	Rscript -e 'data(iris); save(iris, file=\"./data/raw/iris.rdata\")'
-
+data/raw/rawdata.rdata:
+	Rscript src/data/build_raw_data.r
 
 #################################################################################
 # Self Documenting Commands                                                     #

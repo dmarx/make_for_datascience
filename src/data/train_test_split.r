@@ -1,10 +1,10 @@
-load("./data/raw/iris.rdata")
+load("./data/raw/rawdata.rdata")
 
-n = nrow(iris)
+n = nrow(rawdata)
 ix = sample(n, .9*n)
 
-train <- iris[ix,]
-test  <- iris[-ix,]
+train <- rawdata[ix,]
+test  <- rawdata[-ix,]
 
 save(train, file="./data/processed/train.rdata")
 save(test, file="./data/processed/test.rdata")

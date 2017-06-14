@@ -4,7 +4,7 @@ feats = names(train[,-5])
 train$target = train$Species == 'versicolor'
 
 rhs = paste(feats, collapse=" + ")
-formula = paste0('target ~ ', rhs)
+formula = paste0('target ~ -1 + ', rhs)
 
 mod <- lm(formula, data=train, family=binomial)
 

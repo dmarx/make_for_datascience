@@ -45,7 +45,7 @@ full_refresh:
 ## Make Dataset (assumes a project rule has been defined to generate ./data/raw/raw.rdata
 data: ./data/processed/train.rdata ./data/processed/test.rdata
 
-data/processed/train.rdata data/processed/test.rdata: data/raw/rawdata.rdata
+data/processed/train.rdata data/processed/test.rdata: data/raw/rawdata.rdata src/data/train_test_split.r
 	$(R_INTERPRETER) src/data/train_test_split.r
 
 #################################################################################

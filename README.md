@@ -1,4 +1,4 @@
-﻿## Minimal demo of Gnu Make data analytics pipeline using iris dataset
+﻿## Minimal demo of Gnu Make data analytics pipeline
 
 To see a list of commands, run: 
 

@@ -23,11 +23,11 @@ models/%.rdata: src/modeling/train_%.r ./data/processed/train.rdata
 ## Score models against test set
 test: reports/all_models_accuracy.txt $(r_models)
 
-reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata src/modeling/eval_model.r
-	$(R_INTERPRETER) src/modeling/eval_model.r $<
+reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata src/eval/eval_model.r
+	$(R_INTERPRETER) src/eval/eval_model.r $<
 
-reports/all_models_accuracy.txt: $(r_reports)
-	$(R_INTERPRETER) src/modeling/all_models_accuracy.r
+reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r
+	$(R_INTERPRETER) src/eval/all_models_accuracy.r
 
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target

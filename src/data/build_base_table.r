@@ -24,4 +24,4 @@ for(f in feats){
 }
 
 
-save(analyticBaseTable, file="./data/raw/analyticBaseTable.rdata")
+save(analyticBaseTable, file="./data/processed/analyticBaseTable.rdata")

@@ -1,4 +1,4 @@
-load("./data/raw/analyticBaseTable.rdata")
+load("./data/processed/analyticBaseTable.rdata")
 
 n = nrow(analyticBaseTable)
 ix = sample(n, .8*n)

@@ -45,7 +45,7 @@ full_refresh:
 ## Make Dataset (assumes a project rule has been defined to generate ./data/raw/raw.rdata
 data: ./data/processed/train.rdata ./data/processed/test.rdata
 
-data/processed/train.rdata data/processed/test.rdata: data/raw/analyticBaseTable.rdata src/data/train_test_split.r
+data/processed/train.rdata data/processed/test.rdata: data/processed/analyticBaseTable.rdata src/data/train_test_split.r
 	$(R_INTERPRETER) src/data/train_test_split.r
 
 #################################################################################
@@ -55,7 +55,10 @@ data/processed/train.rdata data/processed/test.rdata: data/raw/analyticBaseTable
 data/raw/rawdata.rdata: src/data/get_raw_data.r
 	Rscript src/data/get_raw_data.r
 
-data/raw/analyticBaseTable.rdata: data/raw/rawdata.rdata src/data/build_base_table.r
+## Build the analytic base table by adding features to the raw data
+build_abt: data/processed/analyticBaseTable.rdata
+
+data/processed/analyticBaseTable.rdata: data/raw/rawdata.rdata src/data/build_base_table.r
 	Rscript src/data/build_base_table.r
 
 #################################################################################

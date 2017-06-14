@@ -1,0 +1,4 @@
+"","accuracy"
+"linear_model",0.333333333333333
+"logreg",0.333333333333333
+"logreg_no_intcpt",0.0666666666666667

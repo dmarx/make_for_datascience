@@ -29,12 +29,16 @@ train: $(r_models)
 
 models/%.rdata: src/models/train_%.r ./data/processed/train.rdata
 	$(R_INTERPRETER) $<
-    
+
+
 ## Score models against test set
-test: $(r_reports)  
+test: reports/all_models_accuracy.txt
 
 reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata
 	$(R_INTERPRETER) src/models/eval_model.r $<
+
+reports/all_models_accuracy.txt: $(r_reports)
+	$(R_INTERPRETER) src/models/all_models_accuracy.r
 
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target
@@ -50,13 +54,13 @@ full_refresh:
 	find ./data/raw -type f ! -name '.gitkeep' -exec rm {} +
 	$(MAKE) test
 
-## Make Dataset
-data: ./data/processed/train.rdata ./data/processed/test.rdata
-
 
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
+
+## Make Dataset
+data: ./data/processed/train.rdata ./data/processed/test.rdata
 
 ./data/processed/train.rdata ./data/processed/test.rdata: ./data/raw/iris.rdata
 	$(R_INTERPRETER) ./src/data/train_test_split.r

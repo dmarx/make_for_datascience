@@ -10,24 +10,24 @@ R_INTERPRETER = Rscript
 # COMMANDS                                                                      #
 #################################################################################
 
-r_models  := $(patsubst src/models/train_%.r, models/%.rdata, $(wildcard src/models/train_*.r))
+r_models  := $(patsubst src/modeling/train_%.r, models/%.rdata, $(wildcard src/modeling/train_*.r))
 r_reports := $(patsubst models/%.rdata, reports/confusion_matrix_%.txt, $(r_models))
 
 ## Train models
 train: $(r_models)
 
-models/%.rdata: src/models/train_%.r ./data/processed/train.rdata
+models/%.rdata: src/modeling/train_%.r ./data/processed/train.rdata
 	$(R_INTERPRETER) $<
 
 
 ## Score models against test set
-test: reports/all_models_accuracy.txt
+test: reports/all_models_accuracy.txt $(r_models)
 
-reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata src/models/eval_model.r
-	$(R_INTERPRETER) src/models/eval_model.r $<
+reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata src/modeling/eval_model.r
+	$(R_INTERPRETER) src/modeling/eval_model.r $<
 
 reports/all_models_accuracy.txt: $(r_reports)
-	$(R_INTERPRETER) src/models/all_models_accuracy.r
+	$(R_INTERPRETER) src/modeling/all_models_accuracy.r
 
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target

@@ -8,4 +8,4 @@ formula = paste0('target ~ ', rhs)
 
 mod <- glm(formula, data=train, family=binomial)
 
-save(mod, file="./models/simple_logistic.rdata")
+save(mod, file="./models/logreg.rdata")

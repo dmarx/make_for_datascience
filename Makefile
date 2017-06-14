@@ -1,4 +1,4 @@
-.PHONY: full_refresh
+.PHONY: train
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -21,8 +21,24 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
+r_models  := $(patsubst src/models/train_%.r, models/%.rdata, $(wildcard src/models/train_*.r))
+r_reports := $(patsubst models/%.rdata, reports/confusion_matrix_%.txt, $(r_models))
+
+## Train models
+train: $(r_models)
+
+models/%.rdata: src/models/train_%.r ./data/processed/train.rdata
+	$(R_INTERPRETER) $<
+    
+## Score models against test set
+test: $(r_reports)  
+
+reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata
+	$(R_INTERPRETER) src/models/eval_model.r $<
+
+
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target
-refresh_models:
+refresh:
 	find ./data/processed -type f ! -name '.gitkeep' -exec rm {} +
 	find ./data/external -type f ! -name '.gitkeep' -exec rm {} +
 	find ./data/interim -type f ! -name '.gitkeep' -exec rm {} +
@@ -37,28 +53,16 @@ full_refresh:
 ## Make Dataset
 data: ./data/processed/train.rdata ./data/processed/test.rdata
 
-./data/processed/train.rdata ./data/processed/test.rdata: ./data/raw/iris.rdata
-	Rscript ./src/data/train_test_split.r
-
-./data/raw/iris.rdata:
-	Rscript -e 'data(iris); save(iris, file=\"./data/raw/iris.rdata\")'
-    
-## Train logistic regression classifier on training data
-train: ./models/simple_logistic.rdata
-
-./models/simple_logistic.rdata: ./data/processed/train.rdata ./data/processed/test.rdata
-	Rscript src/models/train_classifier_logreg.r
-
-## Score model against test set
-test: ./models/simple_logistic.rdata ./reports/confusion_metrix.txt
-
-./reports/confusion_metrix.txt: ./models/simple_logistic.rdata ./data/processed/test.rdata
-	Rscript src/models/eval_model.r
 
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
+./data/processed/train.rdata ./data/processed/test.rdata: ./data/raw/iris.rdata
+	$(R_INTERPRETER) ./src/data/train_test_split.r
+
+./data/raw/iris.rdata:
+	Rscript -e 'data(iris); save(iris, file=\"./data/raw/iris.rdata\")'
 
 
 #################################################################################

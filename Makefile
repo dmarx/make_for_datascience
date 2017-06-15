@@ -41,6 +41,11 @@ full_refresh:
 	find ./data/raw -type f ! -name '.gitkeep' -exec rm {} +
 	$(MAKE) test
 
+## Flush out all generated objects
+delete:
+	find ./data -type f ! -name '.gitkeep' -exec rm {} +
+	find ./models -type f ! -name '.gitkeep' -exec rm {} +
+	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
 ## Make Dataset (assumes a project rule has been defined to generate ./data/raw/raw.rdata
 data: ./data/processed/train.rdata ./data/processed/test.rdata

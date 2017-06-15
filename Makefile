@@ -10,14 +10,14 @@ R_INTERPRETER = Rscript
 # COMMANDS                                                                      #
 #################################################################################
 
-r_models  := $(patsubst src/modeling/train_%.r, models/%.rdata, $(wildcard src/modeling/train_*.r))
+r_models  := $(patsubst src/modeling/%.r, models/%.rdata, $(wildcard src/modeling/*.r))
 r_reports := $(patsubst models/%.rdata, reports/confusion_matrix_%.txt, $(r_models))
 
 ## Train models
 train: $(r_models)
 
-models/%.rdata: src/modeling/train_%.r ./data/processed/train.rdata
-	$(R_INTERPRETER) $<
+models/%.rdata: src/modeling/%.r ./data/processed/train.rdata
+	$(R_INTERPRETER) $< $<
 
 
 ## Score models against test set

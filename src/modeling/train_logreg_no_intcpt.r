@@ -9,4 +9,9 @@ formula = paste0('target ~ -1 +', rhs)
 
 mod <- glm(formula, data=train, family=binomial)
 
-save(mod, file="./models/logreg_no_intcpt.rdata")
+this_script <- commandArgs(TRUE)
+fname = basename(this_script)
+stem = strsplit(fname, '\\.r')[1]
+outpath = paste0("./models/",stem,".rdata")
+
+save(mod, file=outpath)

@@ -1,26 +1,25 @@
-boot_sample = function(x){
-  n = nrow(x)
-  ix = sample(n, replace=TRUE)
-  x[ix,]
-}
-
 boot_stat = function(k, x, y, fitModel, stat){
   results = rep(NULL, k)
   full_dat = cbind(y,x)
+  n = nrow(x)
   for(i in 1:k){
-    boot_dat = boot_sample(full_dat)
-    xb = boot_dat[,2:(NCOL(x)+1)]
-    yb = boot_dat[,1]
-    results[i] = stat(fitModel(xb, yb))
+    ix = sample(n, replace=TRUE)
+    xa = x[ix,]
+    ya = y[ix]
+    xb = x[-ix,]
+    yb = y[-ix]
+    
+    mod = fitModel(xa, ya)
+    results[i] = stat(mod, xb, yb)
   }
   results
 }
 
-accuracy = function(mod, X, Y=y){
+accuracy = function(mod, X, Y){
   mean(Y == predict_model(mod, X, type="class") )
 }
 
-rsqrd = function(mod){
+rsqrd = function(mod, ...){
   summary(mod)$r.squared
 }
 
@@ -32,7 +31,15 @@ args <- commandArgs(TRUE)
 if(length(args)>0){
   mod_funcs = args[1]
   stat_name = args[2]
-  stat = statistics[stat_name]
+  stat_func = statistics[[stat_name]]
   
+  source(mod_funcs)
+  load("data/processed/train.rdata")
+  k = 200
+  results = boot_stat(k, X, Y, train_model, stat_func)
   
+  mod_name = basename(mod_funcs)
+  
+  fname = paste0("./data/bootstrap_",k,"_", mod_name, ".rdata")
+  save(results, file = fname)
 }

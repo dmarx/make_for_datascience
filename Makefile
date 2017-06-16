@@ -12,6 +12,7 @@ R_INTERPRETER = Rscript
 
 r_models  := $(patsubst src/modeling/%.r, models/%.rdata, $(wildcard src/modeling/*.r))
 r_reports := $(patsubst models/%.rdata, reports/confusion_matrix_%.txt, $(r_models))
+r_boots   := $(patsubst src/modeling/%.r, data/bootstrap_%.rdata, $(wildcard src/modeling/*.r))
 
 ## Train models
 train: $(r_models)
@@ -29,6 +30,10 @@ reports/confusion_matrix_%.txt: models/%.rdata data/processed/test.rdata src/eva
 reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
 
+bootstrap:$(r_boots)
+
+data/bootstrap_%.rdata: src/modeling/%.r
+	$(R_INTERPRETER) src/eval/bootstrap.r $< accuracy
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target
 refresh:

@@ -11,8 +11,7 @@ train_model <- function(X, Y, ...){
   glm(formula, data=X, family=binomial)
 }
 
-predict_model <- function(mod, X, Y, type=NA, ...){
-  X$target = Y
+predict_model <- function(mod, X, type=NA, ...){
   scores = predict(mod, newdata=X, type="response")
   if(!is.na(type) && type == "class"){
     scores = scores > .5

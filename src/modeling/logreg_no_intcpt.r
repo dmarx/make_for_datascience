@@ -11,5 +11,5 @@ train_model <- function(data, ...){
 }
 
 predict_model <- function(mod, data, ...){
-  predict(mod, newdata=data)
+  predict(mod, newdata=data, type="response")
 }

@@ -1,9 +1,15 @@
-mod_path <- commandArgs(TRUE)
+mod_path <- commandArgs(TRUE) # models/%.rdata
 
 load(mod_path)
 load("./data/processed/test.rdata")
 
-scored = predict(mod, newdata=test, type='response')
+# Get model's predict function
+fname     = basename(mod_path)
+stem      = strsplit(fname, '\\.rdata')[1]
+mod_funcs = paste0("src/modeling/", stem, '.r')
+source(mod_funcs)
+
+scored = predict_model(mod, test)
 confusion <- table(test$target, scored>.5)
 
 # Assume mod_path is of the form `models/mod_name.rdata`

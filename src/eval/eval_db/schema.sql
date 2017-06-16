@@ -7,13 +7,13 @@ CREATE TABLE experiments
     );
     
 CREATE TABLE results
-    (id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    (id          INTEGER PRIMARY KEY AUTOINCREMENT
     ,exp_id      INTEGER
     ,result_name TEXT
     );
 
 CREATE TABLE results_data 
-    (id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    (id              INTEGER PRIMARY KEY AUTOINCREMENT
     ,result_id       INTEGER
     ,field_id        INTEGER
     ,field_value_txt TEXT

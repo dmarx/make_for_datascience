@@ -10,6 +10,10 @@ train_model <- function(data, ...){
   glm(formula, data=train, family=binomial)
 }
 
-predict_model <- function(mod, data, ...){
-  predict(mod, newdata=data, type="response")
+predict_model <- function(mod, data, type=NA, ...){
+  scores = predict(mod, newdata=data, type="response")
+  if(!is.na(type) && type == "class"){
+    scores = scores > .5
+  }
+  scores
 }

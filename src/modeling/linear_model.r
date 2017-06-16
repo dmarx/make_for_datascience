@@ -10,6 +10,10 @@ train_model <- function(data, ...){
   lm(formula, data=train)
 }
 
-predict_model <- function(mod, data, ...){
-  predict(mod, newdata=data)
+predict_model <- function(mod, data, type=NA,  ...){
+  scores = predict(mod, newdata=data)
+  if(!is.na(type) && type == "class"){
+    scores = scores > .5
+  }
+  scores
 }

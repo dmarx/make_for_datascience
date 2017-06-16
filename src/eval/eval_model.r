@@ -9,8 +9,8 @@ stem      = strsplit(fname, '\\.rdata')[1]
 mod_funcs = paste0("src/modeling/", stem, '.r')
 source(mod_funcs)
 
-scored = predict_model(mod, test)
-confusion <- table(test$target, scored>.5)
+scored = predict_model(mod, test, type="class")
+confusion <- table(test$target, scored)
 
 # Assume mod_path is of the form `models/mod_name.rdata`
 mod_name = basename(mod_path)

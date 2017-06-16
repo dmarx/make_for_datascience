@@ -1,17 +1,19 @@
 load("./data/processed/train.rdata")
 
-ignore_cols = which(names(train) %in% c('target', 'rec_id'))
-feats = names(train[,-ignore_cols])
+ignore_cols = which(names(X) %in% c('target', 'rec_id'))
+feats = names(X[,-ignore_cols])
 
 rhs = paste(feats, collapse=" + ")
 formula = paste0('target ~ ', rhs)
 
-train_model <- function(data, ...){
-  glm(formula, data=train, family=binomial)
+train_model <- function(X, Y, ...){
+  X$target = Y
+  glm(formula, data=X, family=binomial)
 }
 
-predict_model <- function(mod, data, type=NA, ...){
-  scores = predict(mod, newdata=data, type="response")
+predict_model <- function(mod, X, Y, type=NA, ...){
+  X$target = Y
+  scores = predict(mod, newdata=X, type="response")
   if(!is.na(type) && type == "class"){
     scores = scores > .5
   }

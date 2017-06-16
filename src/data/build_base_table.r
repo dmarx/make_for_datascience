@@ -23,5 +23,9 @@ for(f in feats){
   }
 }
 
+analyticBaseTable$target = analyticBaseTable$Species == 'versicolor'
+
+analyticBaseTable = analyticBaseTable[,-target_col_ix]
+analyticBaseTable$rec_id = seq_along(nrow(analyticBaseTable))
 
 save(analyticBaseTable, file="./data/processed/analyticBaseTable.rdata")

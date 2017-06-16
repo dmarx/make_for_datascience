@@ -1,8 +1,7 @@
 load("./data/processed/train.rdata")
 
-target_col_ix = which(names(train) == 'Species')
-feats = names(train[,-target_col_ix])
-train$target = train$Species == 'versicolor'
+ignore_cols = which(names(train) %in% c('target', 'rec_id'))
+feats = names(train[,-ignore_cols])
 
 rhs = paste(feats, collapse=" + ")
 formula = paste0('target ~ -1 +', rhs)

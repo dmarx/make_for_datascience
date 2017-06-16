@@ -32,7 +32,7 @@ reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r
 
 bootstrap:$(r_boots)
 
-data/bootstrap_%.rdata: src/modeling/%.r
+data/bootstrap_%.rdata: src/modeling/%.r data/processed/train.rdata src/eval/bootstrap.r
 	$(R_INTERPRETER) src/eval/bootstrap.r $< accuracy
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target

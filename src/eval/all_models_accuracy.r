@@ -12,13 +12,13 @@ modname_from_path = function(mod_path, suffix=".rdata", prefix=NULL){
 }
 
 accuracy=list()
-for (fpath in list.files("reports", "confusion_matrix", full.names=TRUE)){
+for (fpath in list.files("reports", "holdout_confusion", full.names=TRUE)){
   confmat = read.csv(fpath)
   
   m = as.matrix(confmat)[,-1]
   acc = sum(diag(m)) / sum(m)
   
-  mod_name = modname_from_path(fpath, prefix="confusion_matrix_", suffix=".txt")
+  mod_name = modname_from_path(fpath, prefix="holdout_confusion_", suffix=".txt")
   
   accuracy[mod_name] = acc
 }

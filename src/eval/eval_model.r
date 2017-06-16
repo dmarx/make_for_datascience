@@ -15,6 +15,6 @@ confusion <- table(Y, scored)
 # Assume mod_path is of the form `models/mod_name.rdata`
 mod_name = basename(mod_path)
 
-fname = paste0("./reports/confusion_matrix_", mod_name, ".txt")
+fname = paste0("./reports/holdout_confusion_", mod_name, ".txt")
 write.csv(confusion, file = fname)
 

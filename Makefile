@@ -16,8 +16,8 @@ r_reports := $(patsubst models/%.rdata, reports/confusion_matrix_%.txt, $(r_mode
 ## Train models
 train: $(r_models)
 
-models/%.rdata: src/modeling/%.r ./data/processed/train.rdata
-	$(R_INTERPRETER) $< $<
+models/%.rdata: src/modeling/%.r data/processed/train.rdata src/utils/train_and_save_model.r
+	$(R_INTERPRETER) src/utils/train_and_save_model.r $<
 
 
 ## Score models against test set

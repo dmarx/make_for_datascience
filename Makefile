@@ -10,14 +10,14 @@ R_INTERPRETER = Rscript
 # COMMANDS                                                                      #
 #################################################################################
 
-r_models  := $(patsubst src/modeling/%.r, models/%.rdata, $(wildcard src/modeling/*.r))
+r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(wildcard src/modeling/models/*.r))
 r_reports := $(patsubst models/%.rdata, reports/holdout_confusion_%.txt, $(r_models))
-r_boots   := $(patsubst src/modeling/%.r, data/bootstrap_%.rdata, $(wildcard src/modeling/*.r))
+r_boots   := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(wildcard src/modeling/models/*.r))
 
 ## Train models
 train: $(r_models)
 
-models/%.rdata: src/modeling/%.r data/processed/train.rdata src/utils/train_and_save_model.r
+models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/train_and_save_model.r
 	$(R_INTERPRETER) src/utils/train_and_save_model.r $<
 
 
@@ -32,7 +32,7 @@ reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r
 
 bootstrap:$(r_boots)
 
-data/bootstrap_%.rdata: src/modeling/%.r data/processed/train.rdata src/eval/bootstrap.r
+data/bootstrap_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/eval/bootstrap.r
 	$(R_INTERPRETER) src/eval/bootstrap.r $< accuracy
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target

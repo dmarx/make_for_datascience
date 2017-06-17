@@ -6,7 +6,7 @@ load("./data/processed/test.rdata")
 # Get model's predict function
 fname     = basename(mod_path)
 stem      = strsplit(fname, '\\.rdata')[1]
-mod_funcs = paste0("src/modeling/", stem, '.r')
+mod_funcs = paste0("src/modeling/models/", stem, '.r')
 source(mod_funcs)
 
 scored = predict_model(mod, X, Y, type="class")

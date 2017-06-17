@@ -1,5 +1,3 @@
-load("./data/processed/train.rdata")
-
 ignore_cols = which(names(X) %in% c('target', 'rec_id'))
 feats = names(X[,-ignore_cols])
 

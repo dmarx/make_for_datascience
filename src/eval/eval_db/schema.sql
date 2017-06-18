@@ -7,15 +7,24 @@ CREATE TABLE experiments
     );
     
 CREATE TABLE results
-    (id          INTEGER PRIMARY KEY AUTOINCREMENT
-    ,exp_id      INTEGER
-    ,result_name TEXT
+    (id           INTEGER PRIMARY KEY AUTOINCREMENT
+    ,exp_id       INTEGER
+    ,result_name  TEXT
+    ,created_date DATE
     );
 
-CREATE TABLE results_data 
+CREATE TABLE results_data_numeric
     (id              INTEGER PRIMARY KEY AUTOINCREMENT
     ,result_id       INTEGER
-    ,field_id        INTEGER
-    ,field_value_txt TEXT
-    ,field_value_nmr NUMBER
+    ,result_row      INTEGER
+    ,result_field    TEXT      
+    ,value           NUMBER
+    );
+
+CREATE TABLE results_data_text
+    (id              INTEGER PRIMARY KEY AUTOINCREMENT
+    ,result_id       INTEGER
+    ,result_row      INTEGER
+    ,result_field    TEXT      
+    ,value           TEXT
     );

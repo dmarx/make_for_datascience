@@ -14,7 +14,7 @@ PYTHON_INTERPRETER = python
 r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(wildcard src/modeling/models/*.r))
 r_reports := $(patsubst models/%.rdata, reports/holdout_confusion_%.txt, $(r_models))
 r_boots   := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(wildcard src/modeling/models/*.r))
-
+r_ts      := $(patsubst src/modeling/models/%.r, data/tshuffle_%.rdata, $(wildcard src/modeling/models/*.r))
 ## Train models
 train: $(r_models)
 
@@ -34,11 +34,18 @@ reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r dat
 data/modeling_results.db:
 	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
 
+## Bootstrap accuracy against training data for all models
 bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
-
 
 data/bootstrap_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/eval/bootstrap.r
 	$(R_INTERPRETER) src/eval/bootstrap.r $< accuracy
+
+## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
+target_shuffle:$(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+
+data/tshuffle_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/eval/target_shuffle.r
+	$(R_INTERPRETER) src/eval/target_shuffle.r $< accuracy
+
 
 ## Flush out all models and non-raw data, re-run full pipeline via 'test' target
 refresh:

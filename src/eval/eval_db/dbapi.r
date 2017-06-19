@@ -1,7 +1,7 @@
 # Apparently I need to re-write this thing...
 # ... man, I spent like all day Friday writing this goddamn thing.
 
-library(RSQLite)
+suppressWarnings(library(RSQLite))
 
 conn = dbConnect(SQLite(), "data/modeling_results.db")
 
@@ -50,8 +50,13 @@ prep_results = function(results){
   m
 }
 
-insert_results = function(result_id, results){
-  # assumes "results" doesn't need to be melted
+insert_results = function(result_id, results, overwrite=TRUE){
+  if(overwrite){
+    dbSendQuery(conn, "DELETE FROM RESULTS_DATA_NUMERIC where result_id = ?", list(result_id))
+    dbSendQuery(conn, "DELETE FROM RESULTS_DATA_TEXT    where result_id = ?", list(result_id))
+  }
+  
+  # assumes "results" doesn't need to be melted 
   is_numeric = !is.na(as.numeric(results$value))
   insert_results_helper(result_id, results[is_numeric,], 'NUMERIC')
   insert_results_helper(result_id, results[!is_numeric,], 'TEXT')

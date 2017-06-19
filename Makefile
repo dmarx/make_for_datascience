@@ -23,7 +23,7 @@ models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/tra
 
 
 ## Score models against test set
-test: reports/all_models_accuracy.txt $(r_models)
+test: reports/all_models_accuracy.txt $(r_models) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
 reports/holdout_confusion_%.txt: models/%.rdata data/processed/test.rdata src/eval/eval_model.r data/modeling_results.db
 	$(R_INTERPRETER) src/eval/eval_model.r $<
@@ -34,7 +34,7 @@ reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r dat
 data/modeling_results.db:
 	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
 
-bootstrap:$(r_boots)
+bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
 
 data/bootstrap_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/eval/bootstrap.r

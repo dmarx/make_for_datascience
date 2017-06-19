@@ -1,6 +1,25 @@
-load("./data/raw/rawdata.rdata")
+# NB: All feature engineering should be accomplished in dedicated files external
+# to this script to ensure that ABTs that rely on similar features are all
+# drawing those features from the same construction process. This strip should
+# just be a merging of features constructed elsewhere into a unified ABT for
+# a specific modeling task.
 
-analyticBaseTable = rawdata
+####################################
+## Merge feature sets into an ABT ##
+####################################
+
+load("data/processed/sepal_features.rdata")
+load("data/processed/petal_features.rdata")
+
+all_features = merge(sepal_features, petal_features)
+
+####################################
+## Merge target variable onto ABT ##
+####################################
+
+load("data/processed/species_target.rdata")
+
+analyticBaseTable = merge(all_features, species_target[, c("Flower.Id", "target")])
 
 ###########################
 ## Standardize col names ##
@@ -9,50 +28,29 @@ analyticBaseTable = rawdata
 oldnames = names(analyticBaseTable)
 names(analyticBaseTable) = tolower(gsub("\\.", "_", oldnames))
 
-##################
-## Add features ##
-##################
-
-target_col_ix = which(names(analyticBaseTable) == 'species')
-feats = names(analyticBaseTable[,-target_col_ix])
-
-transformations = list(
-  log = log,
-  sqrt = sqrt,
-  sqrd = function(x) x^2
-)
-
-new_feats = rep("", length(feats) * length(transformations))
-i = 1
-for(f in feats){
-  for(trans_name in names(transformations)){
-    feat = paste0(f, "_", trans_name)
-    trans = transformations[trans_name][[1]]
-    analyticBaseTable[,feat] = trans(analyticBaseTable[,f])
-    
-    new_feats[i] = feat
-    i = i + 1
-  }
-}
-
-#######################
-## Define the target ##
-#######################
-
-analyticBaseTable$target = analyticBaseTable$species == 'versicolor'
-analyticBaseTable = analyticBaseTable[,-target_col_ix]
-
 #######################################
 ## Assign a unique ID to each record ##
 #######################################
 
-analyticBaseTable$rec_id = seq_along(nrow(analyticBaseTable))
+# This has already been done for us
+# with the Flower.Id variabl
+#analyticBaseTable$rec_id = seq_along(nrow(analyticBaseTable))
+
+uniq_id_col = "flower_id"
+uniq_in_col = length(unique(analyticBaseTable[,uniq_id_col]))
+
+# Sanity check
+stopifnot( uniq_in_col == nrow(analyticBaseTable) )
 
 ########################################
 ## Save ABT and features list to disk ##
 ########################################
 
-feats = c(feats, new_feats)
+# Prevent future leaks
+ignore_cols = c("flower_id", "target", "species")
+
+all_col_names = names(analyticBaseTable)
+feats = all_col_names[-which(all_col_names %in% ignore_cols)]
 write.table(feats, "data/processed/abt_features.txt", 
             col.names=FALSE, row.names=FALSE, quote=FALSE)
 

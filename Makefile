@@ -17,7 +17,7 @@ r_boots   := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(r_mod
 r_ts      := $(patsubst src/modeling/models/%.r, data/tshuffle_%.rdata, $(r_model_specs))
 r_reports := $(patsubst models/%, reports/holdout_confusion_%.txt, $(r_models))
 
-## Train models
+## Train models against full training data
 train: $(r_models)
 
 models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/train_and_save_model.r
@@ -49,7 +49,7 @@ data/tshuffle_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/ev
 	$(R_INTERPRETER) src/eval/target_shuffle.r $< accuracy
 
 
-## Flush out all models and non-raw data, re-run full pipeline via 'test' target
+## Flush out all models and processed data, re-run full pipeline via 'test' target
 refresh:
 	find ./data/processed -type f ! -name '.gitkeep' -exec rm {} +
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
@@ -60,30 +60,37 @@ full_refresh:
 	find ./data/raw -type f ! -name '.gitkeep' -exec rm {} +
 	$(MAKE) test
 
-## Flush out all generated objects
+## Flush out all generated objects INCLUDING RAW DATA
 delete:
 	find ./data -type f ! -name '.gitkeep' -exec rm {} +
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
-## Make Dataset (assumes a project rule has been defined to generate ./data/raw/raw.rdata
-data: ./data/processed/train.rdata ./data/processed/test.rdata
-
 data/processed/train.rdata data/processed/test.rdata: data/processed/analyticBaseTable.rdata src/data/train_test_split.r
 	$(R_INTERPRETER) src/data/train_test_split.r
+
+
+## Build the analytic base table by adding features to the raw data
+build_abt: data/processed/analyticBaseTable.rdata
 
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
-data/raw/rawdata.rdata: src/data/get_raw_data.r
+data/raw/iris_%.csv: src/data/get_raw_data.r
 	Rscript src/data/get_raw_data.r
 
-## Build the analytic base table by adding features to the raw data
-build_abt: data/processed/analyticBaseTable.rdata
+data/processed/sepal_features.rdata: src/data/sepal_features.r data/raw/iris_sepals.csv
+	Rscript $<
 
-data/processed/analyticBaseTable.rdata: data/raw/rawdata.rdata src/data/build_base_table.r
-	Rscript src/data/build_base_table.r
+data/processed/petal_features.rdata: src/data/petal_features.r data/raw/iris_petals.csv
+	Rscript $<
+
+data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_species.csv
+	Rscript $<
+
+data/processed/analyticBaseTable.rdata: src/data/build_base_table.r data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
+	Rscript $<
 
 #################################################################################
 # Self Documenting Commands                                                     #

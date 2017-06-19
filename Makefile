@@ -11,11 +11,25 @@ PYTHON_INTERPRETER = python
 # COMMANDS                                                                      #
 #################################################################################
 
-r_model_specs := $(wildcard src/modeling/models/*.r)
+## assumes each task has a dedicated ABT
+#tasks := $(patsubst src/data/%, %, $(shell find src/data -type d))
+
+## assumes each task has a dedicated modeling folder and is named "task.*"
+tasks := $(patsubst src/modeling/%, %, $(shell find src/modeling/ -type d | grep task))
+
+##map = $(foreach a,$(2),$(call $(1),$(a)))
+
+r_model_specs := $(wildcard src/modeling/models/task*/*.r)
+
+##r_model_specs := $(wildcard src/modeling/models/*.r)
 r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
-r_boots   := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(r_model_specs))
+r_boots  := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(r_model_specs))
 r_ts      := $(patsubst src/modeling/models/%.r, data/tshuffle_%.rdata, $(r_model_specs))
-r_reports := $(patsubst models/%, reports/holdout_confusion_%.txt, $(r_models))
+
+r_reports := $(patsubst models/%, reports/%_holdout_confusion.txt, $(r_models))
+
+debug:
+	$(foreach a, $(r_reports), echo $(a);)
 
 ## Train models against full training data
 train: $(r_models)
@@ -27,8 +41,11 @@ models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/tra
 ## Score models against test set
 test: reports/all_models_accuracy.txt $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-reports/holdout_confusion_%.txt: models/%.rdata data/processed/test.rdata src/eval/eval_model.r src/eval/eval_db/dbapi.py
-	$(R_INTERPRETER) src/eval/eval_model.r $<
+$(r_reports): $(r_models) data/processed/test.rdata src/eval/eval_model.r src/eval/eval_db/dbapi.py
+	$(foreach model_obj, $(r_models), $(R_INTERPRETER) src/eval/eval_model.r $(model_obj);)
+##	$(R_INTERPRETER) src/eval/eval_model.r $<
+### Make just passes in the first model each time.
+
 
 reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
@@ -89,7 +106,11 @@ data/processed/petal_features.rdata: src/data/petal_features.r data/raw/iris_pet
 data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_species.csv
 	Rscript $<
 
-data/processed/analyticBaseTable.rdata: src/data/build_base_table.r data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
+r_abts := $(wildcard data/processed/task*/*.rdata)
+r_abt_scripts := $(wildcard src/data/task*/build_bast_table.r)
+
+##data/processed/analyticBaseTable.rdata: src/data/build_base_table.r data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
+$(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
 	Rscript $<
 
 #################################################################################

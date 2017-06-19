@@ -54,4 +54,4 @@ feats = all_col_names[-which(all_col_names %in% ignore_cols)]
 write.table(feats, "data/processed/abt_features.txt", 
             col.names=FALSE, row.names=FALSE, quote=FALSE)
 
-save(analyticBaseTable, file="./data/processed/analyticBaseTable.rdata")
+save(analyticBaseTable, file="./data/processed/task0/analyticBaseTable.rdata")

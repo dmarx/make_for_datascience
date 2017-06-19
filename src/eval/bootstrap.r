@@ -48,4 +48,13 @@ if(length(args)>0){
   
   fname = paste0("reports/bootstrap_", mod_name, ".txt")
   write.csv(agg_results, file = fname)
+  
+  source("src/eval/eval_db/dbapi.r")
+  result_name = paste("bootstrap",stat_name, k, sep="_") 
+  m = prep_results(agg_results)
+  m$field_name = gsub("X([0-9]{1,2})\\.$", "\\1%", m$field_name)
+  m$field_name = gsub("X([0-9]{1,2}\\.[0-9]+)$", "\\1%", m$field_name)
+  
+  log_model_result(mod_name_full, result_name, m)
+  dbDisconnect(conn)
 }

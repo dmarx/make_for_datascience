@@ -45,7 +45,7 @@ get_result_id = function(exp_id, result_name){
 prep_results = function(results){
   library(tidyr)
   n = nrow(results)
-  m = gather(data.frame(row_id=1:n, results), "row_id")
+  m = gather(data.frame(row_id=1:n, results, stringsAsFactors=FALSE), "row_id")
   names(m) = c("row_id", "field_name", "value")
   m
 }

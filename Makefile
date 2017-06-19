@@ -11,10 +11,12 @@ PYTHON_INTERPRETER = python
 # COMMANDS                                                                      #
 #################################################################################
 
-r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(wildcard src/modeling/models/*.r))
-r_reports := $(patsubst models/%.rdata, reports/holdout_confusion_%.txt, $(r_models))
-r_boots   := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(wildcard src/modeling/models/*.r))
-r_ts      := $(patsubst src/modeling/models/%.r, data/tshuffle_%.rdata, $(wildcard src/modeling/models/*.r))
+r_model_specs := $(wildcard src/modeling/models/*.r)
+r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
+r_boots   := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(r_model_specs))
+r_ts      := $(patsubst src/modeling/models/%.r, data/tshuffle_%.rdata, $(r_model_specs))
+r_reports := $(patsubst models/%, reports/holdout_confusion_%.txt, $(r_models))
+
 ## Train models
 train: $(r_models)
 
@@ -23,12 +25,12 @@ models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/tra
 
 
 ## Score models against test set
-test: reports/all_models_accuracy.txt $(r_models) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+test: reports/all_models_accuracy.txt $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-reports/holdout_confusion_%.txt: models/%.rdata data/processed/test.rdata src/eval/eval_model.r data/modeling_results.db
+reports/holdout_confusion_%.txt: models/%.rdata data/processed/test.rdata src/eval/eval_model.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/eval_model.r $<
 
-reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r data/modeling_results.db
+reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
     
 data/modeling_results.db:

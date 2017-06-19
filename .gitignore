@@ -1,3 +1,4 @@
 *.rdata
 reports/*.txt
 *.Rhistory
+data/*.db

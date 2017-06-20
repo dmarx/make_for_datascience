@@ -12,10 +12,10 @@ PYTHON_INTERPRETER = python
 #################################################################################
 
 ## assumes each task has a dedicated ABT
-#tasks := $(patsubst src/data/%, %, $(shell find src/data -type d))
+tasks := $(filter task%, $(patsubst src/data/%, %, $(shell find src/data -type d)))
 
 ## assumes each task has a dedicated modeling folder and is named "task.*"
-tasks := $(patsubst src/modeling/%, %, $(shell find src/modeling/ -type d | grep task))
+#tasks := $(patsubst src/modeling/%, %, $(shell find src/modeling/ -type d | grep task))
 
 ##map = $(foreach a,$(2),$(call $(1),$(a)))
 
@@ -29,13 +29,15 @@ r_ts      := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_mode
 r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
 r_abts := $(patsubst src/data/%/build_base_table.r, data/processed/%/analyticBaseTable.rdata, $(r_abt_scripts))
 
-data_path := $(patsubst %/build_bast_table.r, %, $(r_abt_scripts))
-train_data := $(data_path)
-test_data  := $(wildcard data/processed/task*/test.rdata)
+#tasks := $(patsubst src/data/%/build_base_table.r, %, $(r_abt_scripts))
+train_data := $(patsubst %, data/processed/%/train.rdata, $(tasks))
+test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
+#test_data  := $(wildcard data/processed/task*/test.rdata)
 
 debug:
-	echo $(r_abts)
-	echo $(r_abt_scripts)
+	echo $(filter task%, $(tasks))
+	echo $(train_data) $(test_data)
+
 
 ## Train models against full training data
 train: $(r_models)
@@ -84,7 +86,6 @@ delete:
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
 $(train_data) $(test_data): src/data/train_test_split.r $(r_abts)
-#	$(R_INTERPRETER) src/data/train_test_split.r
 	$(foreach abt, $(r_abts), $(R_INTERPRETER) $< $(abt);)
 
 

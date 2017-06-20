@@ -23,13 +23,13 @@ r_model_specs := $(wildcard src/modeling/models/task*/*.r)
 
 ##r_model_specs := $(wildcard src/modeling/models/*.r)
 r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
-r_boots  := $(patsubst src/modeling/models/%.r, data/bootstrap_%.rdata, $(r_model_specs))
-r_ts      := $(patsubst src/modeling/models/%.r, data/tshuffle_%.rdata, $(r_model_specs))
 
 r_reports := $(patsubst models/%, reports/%_holdout_confusion.txt, $(r_models))
+r_boots   := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
+r_ts      := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
 
 debug:
-	$(foreach a, $(r_reports), echo $(a);)
+	echo $(r_ts)
 
 ## Train models against full training data
 train: $(r_models)
@@ -41,29 +41,23 @@ models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/tra
 ## Score models against test set
 test: reports/all_models_accuracy.txt $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-$(r_reports): $(r_models) data/processed/test.rdata src/eval/eval_model.r src/eval/eval_db/dbapi.py
-	$(foreach model_obj, $(r_models), $(R_INTERPRETER) src/eval/eval_model.r $(model_obj);)
-##	$(R_INTERPRETER) src/eval/eval_model.r $<
-### Make just passes in the first model each time.
-
-
 reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
-    
-data/modeling_results.db:
-	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
+
+$(r_reports): $(r_models) data/processed/test.rdata src/eval/eval_model.r src/eval/eval_db/dbapi.py
+	$(foreach model_obj, $(r_models), $(R_INTERPRETER) src/eval/eval_model.r $(model_obj);)
 
 ## Bootstrap accuracy against training data for all models
 bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-data/bootstrap_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/eval/bootstrap.r
-	$(R_INTERPRETER) src/eval/bootstrap.r $< accuracy
+$(r_boots): $(r_model_specs) data/processed/train.rdata src/eval/bootstrap.r
+	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) src/eval/bootstrap.r $(model_spec) accuracy;)
 
 ## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
 target_shuffle:$(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-data/tshuffle_%.rdata: src/modeling/models/%.r data/processed/train.rdata src/eval/target_shuffle.r
-	$(R_INTERPRETER) src/eval/target_shuffle.r $< accuracy
+$(r_ts): $(r_model_specs) data/processed/train.rdata src/eval/target_shuffle.r
+	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) src/eval/target_shuffle.r $(model_spec) accuracy;)
 
 
 ## Flush out all models and processed data, re-run full pipeline via 'test' target
@@ -89,6 +83,9 @@ data/processed/train.rdata data/processed/test.rdata: data/processed/analyticBas
 
 ## Build the analytic base table by adding features to the raw data
 build_abt: data/processed/analyticBaseTable.rdata
+
+data/modeling_results.db:
+	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
 
 #################################################################################
 # PROJECT RULES                                                                 #

@@ -17,14 +17,14 @@ PYTHON_INTERPRETER = python
 ## scripts for this since it would hinder pipelining exploration. If necessary,
 ## a task with a shared ABT could just copy an existing ABT into a new folder or
 ## create a symlink/shortcut to the existing ABT in the appropriate task dir.
-tasks := $(filter task%, $(patsubst src/data/%, %, $(shell find src/data -type d)))
+tasks := $(filter task%, $(shell ls))
 
-r_model_specs := $(wildcard src/modeling/models/task*/*.r)
-r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
+r_model_specs := $(wildcard */src/models/*.r)
+r_models  := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/models/"$$4"data"}' ) ) 
 
-r_test_acc := $(patsubst src/modeling/models/%, reports/%_holdout_confusion.txt, $(r_model_specs))
-r_boots    := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
-r_ts       := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
+r_test_acc := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_holdout_confusion.txt"}' ) )
+r_boots    := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_bootstrap.txt"}' ) )
+r_ts       := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_tshuffle.txt"}' ) )
 r_all_acc  := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
 
 r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
@@ -34,7 +34,11 @@ train_data := $(patsubst %, data/processed/%/train.rdata, $(tasks))
 test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
 
 debug:
-	echo $(r_abts)
+	echo $(r_model_specs)
+	echo $(r_ts)
+#	echo $(shell cat $(r_models) | awk -F "/" '{print $1"/"$3"/"$4"data"}' )
+#	echo $(shell echo $(r_models) | awk -F "/" '{print $$1"/"$$3"/"$$4}'  | awk '{print $$1"data"}' ) 
+#	echo $(shell awk -F "/" '{print $1}' )
 
 
 

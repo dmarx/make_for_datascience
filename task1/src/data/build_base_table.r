@@ -9,9 +9,8 @@
 ####################################
 
 load("data/processed/sepal_features.rdata")
-load("data/processed/petal_features.rdata")
 
-all_features = merge(sepal_features, petal_features)
+all_features = sepal_features
 
 ####################################
 ## Merge target variable onto ABT ##
@@ -19,7 +18,10 @@ all_features = merge(sepal_features, petal_features)
 
 load("data/processed/species_target.rdata")
 
-analyticBaseTable = merge(all_features, species_target[, c("Flower.Id", "target")])
+analyticBaseTable = merge(all_features, species_target[, c("Flower.Id", "Species")])
+old_names = names(analyticBaseTable)
+ix = which(old_names == "Species")
+names(analyticBaseTable)[ix] = "target"
 
 ###########################
 ## Standardize col names ##
@@ -51,7 +53,7 @@ ignore_cols = c("flower_id", "target", "species")
 
 all_col_names = names(analyticBaseTable)
 feats = all_col_names[-which(all_col_names %in% ignore_cols)]
-data_path = "data/processed/task0/"
+data_path = "data/processed/task1/"
 dir.create(data_path, showWarnings = FALSE)
 write.table(feats, file=paste0(data_path, "abt_features.txt"), 
             col.names=FALSE, row.names=FALSE, quote=FALSE)

@@ -11,63 +11,59 @@ PYTHON_INTERPRETER = python
 # COMMANDS                                                                      #
 #################################################################################
 
-## assumes each task has a dedicated ABT
+## assumes each task has a dedicated ABT. Alternatively, could target 
+## src/modeling/models/task*/foobar.r
+## Although tasks could theoretically share an ABT, we shouldn't rely on modeling
+## scripts for this since it would hinder pipelining exploration. If necessary,
+## a task with a shared ABT could just copy an existing ABT into a new folder or
+## create a symlink/shortcut to the existing ABT in the appropriate task dir.
 tasks := $(filter task%, $(patsubst src/data/%, %, $(shell find src/data -type d)))
-
-## assumes each task has a dedicated modeling folder and is named "task.*"
-#tasks := $(patsubst src/modeling/%, %, $(shell find src/modeling/ -type d | grep task))
-
-##map = $(foreach a,$(2),$(call $(1),$(a)))
 
 r_model_specs := $(wildcard src/modeling/models/task*/*.r)
 r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
 
-r_reports := $(patsubst src/modeling/models/%, reports/%_holdout_confusion.txt, $(r_model_specs))
-r_boots   := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
-r_ts      := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
-r_acc     := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
+r_test_acc := $(patsubst src/modeling/models/%, reports/%_holdout_confusion.txt, $(r_model_specs))
+r_boots    := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
+r_ts       := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
+r_all_acc  := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
 
 r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
 r_abts := $(patsubst src/data/%/build_base_table.r, data/processed/%/analyticBaseTable.rdata, $(r_abt_scripts))
 
-#tasks := $(patsubst src/data/%/build_base_table.r, %, $(r_abt_scripts))
 train_data := $(patsubst %, data/processed/%/train.rdata, $(tasks))
 test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
-#test_data  := $(wildcard data/processed/task*/test.rdata)
 
 debug:
-	echo $(r_acc)
+	echo $(r_all_acc)
 
 
 
 ## Train models against full training data
 train: $(r_models)
 
-models/%.rdata: src/modeling/models/%.r $(train_data) src/utils/train_and_save_model.r
-	$(R_INTERPRETER) src/utils/train_and_save_model.r $<
-
+$(r_models): src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
+	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
 
 ## Score models against test set
-test: $(r_acc) $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+test: $(r_all_acc) $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-$(r_acc): $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
+$(r_all_acc): $(r_test_acc) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
 
-$(r_reports): $(r_models) $(test_data) src/eval/eval_model.r src/eval/eval_db/dbapi.py
-	$(foreach model_obj, $(r_models), $(R_INTERPRETER) src/eval/eval_model.r $(model_obj);)
+$(r_test_acc): src/eval/eval_model.r $(r_models) $(test_data) src/eval/eval_db/dbapi.py
+	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
 
 ## Bootstrap accuracy against training data for all models
 bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-$(r_boots): src/eval/bootstrap.r $(r_model_specs) $(train_data) 
-	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) $< $(model_spec) accuracy;)
+$(r_boots): src/eval/bootstrap.r $(r_model_specs) $(train_data)
+	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
 
 ## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
 target_shuffle:$(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
 $(r_ts): src/eval/target_shuffle.r $(r_model_specs) $(train_data)
-	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) $< $(model_spec) accuracy;)
-
+	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
 
 ## Flush out all models and processed data, re-run full pipeline via 'test' target
 refresh:
@@ -87,7 +83,8 @@ delete:
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
 $(train_data) $(test_data): src/data/train_test_split.r $(r_abts)
-	$(foreach abt, $(r_abts), $(R_INTERPRETER) $< $(abt);)
+	$(eval new := $(filter %/AnalyticBaseTable.rdata, $?))
+	$(foreach abt, $(new), $(R_INTERPRETER) $< $(abt);)
 
 
 ## Build the analytic base table by adding features to the raw data
@@ -113,8 +110,9 @@ data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_spe
 	Rscript $<
 
 # Complains about circular dependency, drops $(r_abt_scripts dependency. Not sure why.
-$(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
-	$(foreach abt_script, $(r_abt_scripts), $(R_INTERPRETER) $(abt_script);)
+$(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata
+	$(eval new := $(filter %/build_base_table.r, $?))
+	$(foreach abt_script, $(new), $(R_INTERPRETER) $(abt_script);)
 
 #################################################################################
 # Self Documenting Commands                                                     #

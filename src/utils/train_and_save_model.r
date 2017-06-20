@@ -1,12 +1,17 @@
-load("./data/processed/train.rdata")
+mod_funcs <- commandArgs(TRUE)
+source(mod_funcs)
 
-mod_path <- commandArgs(TRUE)
-source(mod_path)
+
+mod_name = gsub("src/modeling/models/(task.*/.*\\.r)","\\1", mod_funcs) ## task0/logreg.rdata
+task_name = dirname(mod_name)
+data_path = paste0("data/processed/", task_name, "/train.rdata")
+
+load(data_path) 
 
 mod <- train_model(X, Y)
 
-fname = basename(mod_path)
-stem = strsplit(fname, '\\.r')[1]
+
+stem = strsplit(mod_name, '\\.r')[1]
 outpath = paste0("./models/",stem,".rdata")
 
 save(mod, file=outpath)

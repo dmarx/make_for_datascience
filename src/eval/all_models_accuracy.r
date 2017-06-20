@@ -12,7 +12,7 @@ modname_from_path = function(mod_path, suffix=".rdata", prefix=NULL){
 }
 
 accuracy=list()
-for (fpath in list.files("reports", "holdout_confusion", full.names=TRUE)){
+for (fpath in list.files("reports", "holdout_confusion", full.names=TRUE, recursive=TRUE)){
   confmat = read.csv(fpath)
   
   m = as.matrix(confmat)[,-1]
@@ -27,4 +27,5 @@ all_acc = t(data.frame(accuracy))
 
 colnames(all_acc) = "accuracy"
 
-write.csv(all_acc, file = "reports/all_models_accuracy.txt")
+outpath = paste0(dirname(fpath), "/all_models_accuracy.txt")
+write.csv(all_acc, file = outpath)

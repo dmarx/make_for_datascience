@@ -1,7 +1,7 @@
 import sqlite3
 
 class DbAPI(object):
-    def __init__(self, db_name='data/modeling_results.db'):
+    def __init__(self, db_name='common/data/modeling_results.db'):
         self.db_name = db_name
         self.init_db()
         
@@ -11,7 +11,7 @@ class DbAPI(object):
         try:
             c.execute('SELECT 1 FROM experiments')
         except:
-            with open('src/eval/eval_db/schema.sql') as f:
+            with open('common/src/eval/eval_db/schema.sql') as f:
                 c.executescript(f.read())
         c.close()
         

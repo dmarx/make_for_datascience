@@ -3,7 +3,7 @@
 
 suppressWarnings(library(RSQLite))
 
-conn = dbConnect(SQLite(), "data/modeling_results.db")
+conn = dbConnect(SQLite(), "common/data/modeling_results.db")
 
 commit_id = system("git rev-parse HEAD", intern=TRUE)
 current_date = Sys.time()

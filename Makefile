@@ -41,29 +41,29 @@ debug:
 ## Train models against full training data
 train: $(r_models)
 
-$(r_models): src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
+$(r_models): common/src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
 	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
 
 ## Score models against test set
-test: $(r_all_acc) $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+test: $(r_all_acc) $(r_models) $(r_boots) $(r_ts) common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 
 # I don't think there's anything I can do to fix this rule.
-$(r_all_acc): $(r_test_acc) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
-	$(R_INTERPRETER) src/eval/all_models_accuracy.r
+$(r_all_acc): $(r_test_acc) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py
+	$(R_INTERPRETER) common/src/eval/all_models_accuracy.r
 
-$(r_test_acc): src/eval/eval_model.r $(r_models) $(test_data) src/eval/eval_db/dbapi.py
+$(r_test_acc): common/src/eval/eval_model.r $(r_models) $(test_data) common/src/eval/eval_db/dbapi.py
 	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
 
 ## Bootstrap accuracy against training data for all models
-bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+bootstrap:$(r_boots) common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 
-$(r_boots): src/eval/bootstrap.r $(r_model_specs) $(train_data)
+$(r_boots): common/src/eval/bootstrap.r $(r_model_specs) $(train_data)
 	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
 
 ## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
-target_shuffle:$(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+target_shuffle:$(r_ts) common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 
-$(r_ts): src/eval/target_shuffle.r $(r_model_specs) $(train_data)
+$(r_ts): common/src/eval/target_shuffle.r $(r_model_specs) $(train_data)
 	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
 
 ## Flush out all models and processed data, re-run full pipeline via 'test' target
@@ -83,7 +83,7 @@ delete:
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
-$(train_data) $(test_data): src/data/train_test_split.r $(r_abts)
+$(train_data) $(test_data): common/src/data/train_test_split.r $(r_abts)
 	$(eval new := $(filter %/AnalyticBaseTable.rdata, $?))
 	$(foreach abt, $(new), $(R_INTERPRETER) $< $(abt);)
 
@@ -92,25 +92,25 @@ $(train_data) $(test_data): src/data/train_test_split.r $(r_abts)
 build_abt: $(r_abts)
 
 data/modeling_results.db:
-	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
+	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
 
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
-data/raw/iris_%.csv: src/data/get_raw_data.r
-	Rscript src/data/get_raw_data.r
+data/raw/iris_%.csv: common/src/data/get_raw_data.r
+	Rscript common/src/data/get_raw_data.r
 
-data/processed/sepal_features.rdata: src/data/sepal_features.r data/raw/iris_sepals.csv
+data/processed/sepal_features.rdata: common/src/data/sepal_features.r common/data/raw/iris_sepals.csv
 	Rscript $<
 
-data/processed/petal_features.rdata: src/data/petal_features.r data/raw/iris_petals.csv
+data/processed/petal_features.rdata: common/src/data/petal_features.r common/data/raw/iris_petals.csv
 	Rscript $<
 
-data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_species.csv
+data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
 	Rscript $<
 
-$(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata
+$(r_abts): $(r_abt_scripts) common/data/processed/sepal_features.rdata common/data/processed/petal_features.rdata common/data/processed/species_target.rdata
 	$(eval outfile := $(filter %/AnalyticBaseTable.rdata, $@))
 	$(eval new := $(patsubst  %/AnalyticBaseTable.rdata, %/build_base_table.r, $(outfile)))
 	$(foreach abt_script, $(new), $(R_INTERPRETER) $(abt_script);)

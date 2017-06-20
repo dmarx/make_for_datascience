@@ -36,21 +36,21 @@ statistics = list(accuracy = accuracy,
 args <- commandArgs(TRUE) ## reports/task0/logreg.r_tshuffle.txt accuracy
 if(length(args)>0){
   outpath = args[1]
-  mod_name = gsub("reports/(task.*/.*\\.r)_tshuffle.txt","\\1", outpath) ## task0/logreg.rdata
+  task_name = gsub("(task.*)/reports/(.*\\.r)_tshuffle.txt","\\1", outpath)
+  mod_name  = gsub("(task.*)/reports/(.*\\.r)_tshuffle.txt","\\2", outpath)
   stat_name = args[2]
-  task_name = dirname(mod_name)
-  data_path = paste0("data/processed/", task_name, "/train.rdata")
+  data_path = paste0(task_name, "/data/processed/train.rdata")
   
   load(data_path) 
   stat_func = statistics[[stat_name]]
   
-  mod_funcs = paste0("src/modeling/models/", mod_name)
+  mod_funcs = paste0(task_name, "/src/models/", mod_name)
   source(mod_funcs)
   
   k = 200
   results = target_shuffle(k, X, Y, train_model, stat_func, returnValues=TRUE, estimateSignificance=TRUE)
   
-  fname = paste0("data/processed/", mod_name, "_tshuffle.rdata")
+  fname = paste0(task_name, "/data/processed/", mod_name, "_tshuffle.rdata")
   dir.create(dirname(fname), showWarnings = FALSE)
   save(results, file = fname)
   
@@ -60,10 +60,10 @@ if(length(args)>0){
   dir.create(dirname(outpath), showWarnings = FALSE)
   write.csv(agg_results, file = outpath)
   
-  source("src/eval/eval_db/dbapi.r")
+  source("common/src/eval/eval_db/dbapi.r")
   result_name = paste("target_shuffle",stat_name, k, sep="_") 
   m = prep_results(agg_results)
 
-  log_model_result(mod_name, result_name, m)
+  log_model_result(paste0(task_name, '/', mod_name), result_name, m)
   dbDisconnect(conn)
 }

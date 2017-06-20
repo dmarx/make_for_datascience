@@ -1,14 +1,8 @@
-feats = read.table("data/processed/task0/abt_features.txt", 
-                   stringsAsFactors=FALSE)[,1]
-
-# This should be handled in the ABT
-ignore_cols = which(feats %in% c('target', 'rec_id'))
-if(length(ignore_cols) > 0) feats = feats[,-ignore_cols]
-
-rhs = paste(feats, collapse=" + ")
-formula = paste0('target ~ -1 +', rhs)
-
 train_model <- function(X, Y, ...){
+  feats = read.table("task0/data/processed/abt_features.txt", stringsAsFactors=FALSE)[,1]
+  rhs = paste(feats, collapse=" + ")
+  formula = paste0('target ~ -1 + ', rhs)
+  
   X$target = Y
   glm(formula, data=X, family=binomial)
 }

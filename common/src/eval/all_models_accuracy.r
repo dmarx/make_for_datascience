@@ -12,8 +12,8 @@ modname_from_path = function(mod_path, suffix=".rdata", prefix=NULL){
 }
 
 accuracy=list()
-fpaths = list.files("reports", "holdout_confusion", full.names=TRUE, recursive=TRUE)
-tasks = gsub("reports/(task.*)/.*", "\\1", fpaths)
+fpaths = list.files(".", "holdout_confusion", full.names=TRUE, recursive=TRUE)
+tasks = gsub("./(task.*)/reports.*", "\\1", fpaths)
 for(task in unique(tasks)) accuracy[[task]] = list()
 for (i in 1:length(fpaths)){
   fpath = fpaths[i]
@@ -38,6 +38,6 @@ for(task in unique(tasks)){
   colnames(all_task_acc) = "accuracy"
   rownames(all_task_acc) = paste0(task, "/", rownames(all_task_acc))
   
-  outpath = paste0("reports/", task, "/all_models_accuracy.txt")
+  outpath = paste0(task, "/reports/all_models_accuracy.txt")
   write.csv(all_task_acc, file = outpath)
 }

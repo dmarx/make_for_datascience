@@ -33,17 +33,18 @@ rsqrd = function(mod, ...){
 statistics = list(accuracy = accuracy, 
              rsqrd=rsqrd)
 
-args <- commandArgs(TRUE) ## src/modeling/models/task0/logreg.r accuracy
+args <- commandArgs(TRUE) ## reports/task0/logreg.r_tshuffle.txt accuracy
 if(length(args)>0){
-  mod_funcs = args[1]
+  outpath = args[1]
+  mod_name = gsub("reports/(task.*/.*\\.r)_tshuffle.txt","\\1", outpath) ## task0/logreg.rdata
   stat_name = args[2]
-  mod_name = gsub("src/modeling/models/(task.*/.*\\.r)","\\1", mod_funcs) ## task0/logreg.rdata
   task_name = dirname(mod_name)
   data_path = paste0("data/processed/", task_name, "/train.rdata")
   
   load(data_path) 
   stat_func = statistics[[stat_name]]
   
+  mod_funcs = paste0("src/modeling/models/", mod_name)
   source(mod_funcs)
   
   k = 200
@@ -56,9 +57,8 @@ if(length(args)>0){
   agg_results = data.frame(est_pval = results$est_pval)
   
   ### If bootstrap has been done, maybe calculate an interval around the p-val estimate.
-  fname = paste0("reports/", mod_name, "_tshuffle.txt")
-  dir.create(dirname(fname), showWarnings = FALSE)
-  write.csv(agg_results, file = fname)
+  dir.create(dirname(outpath), showWarnings = FALSE)
+  write.csv(agg_results, file = outpath)
   
   source("src/eval/eval_db/dbapi.r")
   result_name = paste("target_shuffle",stat_name, k, sep="_") 

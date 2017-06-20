@@ -1,9 +1,9 @@
-mod_path <- commandArgs(TRUE) # models/task0/logreg.rdata
+outpath <- commandArgs(TRUE) ## reports/task0/logreg.r_holdout_confusion.txt
+
+mod_name = gsub("reports/(task.*/.*\\.r)_holdout_confusion.txt","\\1", outpath)
+mod_path = paste0("models/", mod_name, "data")
 
 load(mod_path) # gets pre-trained `mod`` object
-
-# Get model's predict function
-mod_name = gsub("models/(task.*/.*\\.r)data","\\1", mod_path)
 
 task_name = dirname(mod_name)
 data_path = paste0("data/processed/", task_name, "/test.rdata")

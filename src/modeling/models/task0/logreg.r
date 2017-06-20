@@ -1,4 +1,4 @@
-feats = read.table("data/processed/abt_features.txt", 
+feats = read.table("data/processed/task0/abt_features.txt", 
                    stringsAsFactors=FALSE)[,1]
 
 # This should be handled in the ABT

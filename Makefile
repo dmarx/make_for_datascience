@@ -36,8 +36,8 @@ test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
 #test_data  := $(wildcard data/processed/task*/test.rdata)
 
 debug:
-	echo $(filter task%, $(tasks))
-	echo $(train_data) $(test_data)
+	echo $(r_acc)
+
 
 
 ## Train models against full training data

@@ -16,6 +16,7 @@ for (fpath in list.files("reports", "holdout_confusion", full.names=TRUE, recurs
   confmat = read.csv(fpath)
   
   m = as.matrix(confmat)[,-1]
+  m = apply(m, 2, as.numeric)
   acc = sum(diag(m)) / sum(m)
   
   mod_name = modname_from_path(fpath, prefix="holdout_confusion_", suffix=".txt")

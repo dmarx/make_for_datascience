@@ -27,19 +27,15 @@ r_boots    := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/
 r_ts       := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_tshuffle.txt"}' ) )
 r_all_acc  := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
 
-r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
-r_abts := $(patsubst src/data/%/build_base_table.r, data/processed/%/analyticBaseTable.rdata, $(r_abt_scripts))
+r_abt_scripts := $(wildcard task*/src/data/build_base_table.r)
+r_abts := $(patsubst %, %/data/processed/analyticBaseTable.rdata,  $(tasks))
 
-train_data := $(patsubst %, data/processed/%/train.rdata, $(tasks))
-test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
+train_data := $(patsubst %, %/data/processed/train.rdata, $(tasks))
+test_data  := $(patsubst %, %/data/processed/test.rdata, $(tasks))
 
 debug:
-	echo $(r_model_specs)
-	echo $(r_ts)
-#	echo $(shell cat $(r_models) | awk -F "/" '{print $1"/"$3"/"$4"data"}' )
-#	echo $(shell echo $(r_models) | awk -F "/" '{print $$1"/"$$3"/"$$4}'  | awk '{print $$1"data"}' ) 
-#	echo $(shell awk -F "/" '{print $1}' )
-
+	echo $(r_abt_scripts)
+	echo $(train_data)
 
 
 ## Train models against full training data
@@ -51,6 +47,7 @@ $(r_models): src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
 ## Score models against test set
 test: $(r_all_acc) $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
+# I don't think there's anything I can do to fix this rule.
 $(r_all_acc): $(r_test_acc) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
 

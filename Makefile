@@ -34,7 +34,7 @@ train_data := $(patsubst %, data/processed/%/train.rdata, $(tasks))
 test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
 
 debug:
-	echo $(r_all_acc)
+	echo $(r_abts)
 
 
 
@@ -109,10 +109,11 @@ data/processed/petal_features.rdata: src/data/petal_features.r data/raw/iris_pet
 data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_species.csv
 	Rscript $<
 
-# Complains about circular dependency, drops $(r_abt_scripts dependency. Not sure why.
 $(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata
-	$(eval new := $(filter %/build_base_table.r, $?))
+	$(eval outfile := $(filter %/AnalyticBaseTable.rdata, $@))
+	$(eval new := $(patsubst  %/AnalyticBaseTable.rdata, %/build_base_table.r, $(outfile)))
 	$(foreach abt_script, $(new), $(R_INTERPRETER) $(abt_script);)
+
 
 #################################################################################
 # Self Documenting Commands                                                     #

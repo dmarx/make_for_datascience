@@ -1,12 +1,15 @@
 mod_path <- commandArgs(TRUE) # models/task0/logreg.rdata
 
 load(mod_path) # gets pre-trained `mod`` object
-load("./data/processed/test.rdata")
 
 # Get model's predict function
-mod_name = gsub("models/(task.*/.*\\.rdata)","\\1", mod_path)
-stem      = strsplit(mod_name, '\\.rdata')[1]
-mod_funcs = paste0("src/modeling/models/", stem, '.r')
+mod_name = gsub("models/(task.*/.*\\.r)data","\\1", mod_path)
+
+task_name = dirname(mod_name)
+data_path = paste0("data/processed/", task_name, "/test.rdata")
+load(data_path) 
+
+mod_funcs = paste0("src/modeling/models/", mod_name)
 source(mod_funcs)
 
 scored = predict_model(mod, X, Y, type="class")

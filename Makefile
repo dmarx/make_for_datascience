@@ -20,21 +20,27 @@ tasks := $(patsubst src/modeling/%, %, $(shell find src/modeling/ -type d | grep
 ##map = $(foreach a,$(2),$(call $(1),$(a)))
 
 r_model_specs := $(wildcard src/modeling/models/task*/*.r)
-
-##r_model_specs := $(wildcard src/modeling/models/*.r)
 r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
 
-r_reports := $(patsubst models/%, reports/%_holdout_confusion.txt, $(r_models))
+r_reports := $(patsubst src/modeling/models/%, reports/%_holdout_confusion.txt, $(r_model_specs))
 r_boots   := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
 r_ts      := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
 
+r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
+r_abts := $(patsubst src/data/%/build_base_table.r, data/processed/%/analyticBaseTable.rdata, $(r_abt_scripts))
+
+data_path := $(patsubst %/build_bast_table.r, %, $(r_abt_scripts))
+train_data := $(data_path)
+test_data  := $(wildcard data/processed/task*/test.rdata)
+
 debug:
-	echo $(r_ts)
+	echo $(r_abts)
+	echo $(r_abt_scripts)
 
 ## Train models against full training data
 train: $(r_models)
 
-models/%.rdata: src/modeling/models/%.r data/processed/train.rdata src/utils/train_and_save_model.r
+models/%.rdata: src/modeling/models/%.r $(train_data) src/utils/train_and_save_model.r
 	$(R_INTERPRETER) src/utils/train_and_save_model.r $<
 
 
@@ -44,20 +50,20 @@ test: reports/all_models_accuracy.txt $(r_models) $(r_boots) $(r_ts) src/eval/ev
 reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
 
-$(r_reports): $(r_models) data/processed/test.rdata src/eval/eval_model.r src/eval/eval_db/dbapi.py
+$(r_reports): $(r_models) $(test_data) src/eval/eval_model.r src/eval/eval_db/dbapi.py
 	$(foreach model_obj, $(r_models), $(R_INTERPRETER) src/eval/eval_model.r $(model_obj);)
 
 ## Bootstrap accuracy against training data for all models
 bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-$(r_boots): $(r_model_specs) data/processed/train.rdata src/eval/bootstrap.r
-	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) src/eval/bootstrap.r $(model_spec) accuracy;)
+$(r_boots): src/eval/bootstrap.r $(r_model_specs) $(train_data) 
+	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) $< $(model_spec) accuracy;)
 
 ## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
 target_shuffle:$(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-$(r_ts): $(r_model_specs) data/processed/train.rdata src/eval/target_shuffle.r
-	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) src/eval/target_shuffle.r $(model_spec) accuracy;)
+$(r_ts): src/eval/target_shuffle.r $(r_model_specs) $(train_data)
+	$(foreach model_spec, $(r_model_specs), $(R_INTERPRETER) $< $(model_spec) accuracy;)
 
 
 ## Flush out all models and processed data, re-run full pipeline via 'test' target
@@ -77,12 +83,13 @@ delete:
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
-data/processed/train.rdata data/processed/test.rdata: data/processed/analyticBaseTable.rdata src/data/train_test_split.r
-	$(R_INTERPRETER) src/data/train_test_split.r
+$(train_data) $(test_data): src/data/train_test_split.r $(r_abts)
+#	$(R_INTERPRETER) src/data/train_test_split.r
+	$(foreach abt, $(r_abts), $(R_INTERPRETER) $< $(abt);)
 
 
 ## Build the analytic base table by adding features to the raw data
-build_abt: data/processed/analyticBaseTable.rdata
+build_abt: $(r_abts)
 
 data/modeling_results.db:
 	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
@@ -103,12 +110,9 @@ data/processed/petal_features.rdata: src/data/petal_features.r data/raw/iris_pet
 data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_species.csv
 	Rscript $<
 
-r_abts := $(wildcard data/processed/task*/*.rdata)
-r_abt_scripts := $(wildcard src/data/task*/build_bast_table.r)
-
-##data/processed/analyticBaseTable.rdata: src/data/build_base_table.r data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
+# Complains about circular dependency, drops $(r_abt_scripts dependency. Not sure why.
 $(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata 
-	Rscript $<
+	$(foreach abt_script, $(r_abt_scripts), $(R_INTERPRETER) $(abt_script);)
 
 #################################################################################
 # Self Documenting Commands                                                     #

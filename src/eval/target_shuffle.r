@@ -37,11 +37,15 @@ args <- commandArgs(TRUE) ## src/modeling/models/task0/logreg.r accuracy
 if(length(args)>0){
   mod_funcs = args[1]
   stat_name = args[2]
-  mod_name = gsub("src/modeling/models/(task.*\\.r)","\\1", mod_funcs) ## task0/logreg.r
+  mod_name = gsub("src/modeling/models/(task.*/.*\\.r)","\\1", mod_funcs) ## task0/logreg.rdata
+  task_name = dirname(mod_name)
+  data_path = paste0("data/processed/", task_name, "/train.rdata")
+  
+  load(data_path) 
   stat_func = statistics[[stat_name]]
   
   source(mod_funcs)
-  load("data/processed/train.rdata")
+  
   k = 200
   results = target_shuffle(k, X, Y, train_model, stat_func, returnValues=TRUE, estimateSignificance=TRUE)
   

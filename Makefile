@@ -25,6 +25,7 @@ r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs
 r_reports := $(patsubst src/modeling/models/%, reports/%_holdout_confusion.txt, $(r_model_specs))
 r_boots   := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
 r_ts      := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
+r_acc     := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
 
 r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
 r_abts := $(patsubst src/data/%/build_base_table.r, data/processed/%/analyticBaseTable.rdata, $(r_abt_scripts))
@@ -47,9 +48,9 @@ models/%.rdata: src/modeling/models/%.r $(train_data) src/utils/train_and_save_m
 
 
 ## Score models against test set
-test: reports/all_models_accuracy.txt $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+test: $(r_acc) $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
 
-reports/all_models_accuracy.txt: $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
+$(r_acc): $(r_reports) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
 	$(R_INTERPRETER) src/eval/all_models_accuracy.r
 
 $(r_reports): $(r_models) $(test_data) src/eval/eval_model.r src/eval/eval_db/dbapi.py

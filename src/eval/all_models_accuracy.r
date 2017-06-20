@@ -27,5 +27,5 @@ all_acc = t(data.frame(accuracy))
 
 colnames(all_acc) = "accuracy"
 
-outpath = paste0(dirname(fpath), "all_models_accuracy.txt")
+outpath = paste0(dirname(fpath), "/all_models_accuracy.txt")
 write.csv(all_acc, file = outpath)

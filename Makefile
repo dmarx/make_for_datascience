@@ -84,9 +84,6 @@ delete:
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
-    ## %/data/processed/train.rdata
-    ## %/data/processed/analyticBaseTable.rdata
-    ## $(shell echo $@ | awk -F "/" '{print $$1"/data/processed/analyticBaseTable.rdata"}' )
 $(train_data) $(test_data): common/src/data/train_test_split.r $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@)
 	$(eval tgt_abt_trn := $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
 	$(eval tgt_abt_tst := $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@) )

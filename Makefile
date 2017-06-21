@@ -33,9 +33,10 @@ r_abts := $(patsubst %, %/data/processed/analyticBaseTable.rdata,  $(tasks))
 train_data := $(patsubst %, %/data/processed/train.rdata, $(tasks))
 test_data  := $(patsubst %, %/data/processed/test.rdata, $(tasks))
 
-debug:
-	echo $(r_abts)
-	echo $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $(r_abts))
+debug: task0/data/processed/train.rdata
+	echo $(train_data)
+	echo $<
+	echo $(shell echo $$< | awk -F "/" '{print $$1"/data/processed/analyticBaseTable.rdata"}' )
 
 
 ## Train models against full training data
@@ -83,36 +84,40 @@ delete:
 	find ./models -type f ! -name '.gitkeep' -exec rm {} +
 	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
 
-$(train_data) $(test_data): common/src/data/train_test_split.r $(r_abts)
-	$(eval new := $(filter %/AnalyticBaseTable.rdata, $?))
-	$(foreach abt, $(new), $(R_INTERPRETER) $< $(abt);)
+    ## %/data/processed/train.rdata
+    ## %/data/processed/analyticBaseTable.rdata
+    ## $(shell echo $@ | awk -F "/" '{print $$1"/data/processed/analyticBaseTable.rdata"}' )
+$(train_data) $(test_data): common/src/data/train_test_split.r $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@)
+	$(eval tgt_abt_trn := $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
+	$(eval tgt_abt_tst := $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
+	$(eval candidates := $(tgt_abt_trn) $(tgt_abt_tst) )
+	$(eval abt:=$(filter %analyticBaseTable.rdata, $(candidates)))
+	$(R_INTERPRETER) $< $(abt)
 
 
 ## Build the analytic base table by adding features to the raw data
 build_abt: $(r_abts)
 
-data/modeling_results.db:
+common/data/modeling_results.db:
 	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
 
 #################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
-data/raw/iris_%.csv: common/src/data/get_raw_data.r
+common/data/raw/iris_%.csv: common/src/data/get_raw_data.r
 	Rscript common/src/data/get_raw_data.r
 
-data/processed/sepal_features.rdata: common/src/data/sepal_features.r common/data/raw/iris_sepals.csv
+common/data/processed/sepal_features.rdata: common/src/data/sepal_features.r common/data/raw/iris_sepals.csv
 	Rscript $<
 
-data/processed/petal_features.rdata: common/src/data/petal_features.r common/data/raw/iris_petals.csv
+common/data/processed/petal_features.rdata: common/src/data/petal_features.r common/data/raw/iris_petals.csv
 	Rscript $<
 
-data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
+common/data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
 	Rscript $<
 
 
-#r_abt_scripts := $(wildcard task*/src/data/build_base_table.r)
-#r_abts := $(patsubst %, %/data/processed/analyticBaseTable.rdata,  $(tasks))
 $(r_abts): $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $@) common/data/processed/sepal_features.rdata common/data/processed/petal_features.rdata common/data/processed/species_target.rdata
 	$(R_INTERPRETER) $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $@)
 

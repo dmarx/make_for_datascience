@@ -91,7 +91,7 @@ $(train_data) $(test_data): common/src/data/train_test_split.r $(patsubst %/data
 	$(eval tgt_abt_trn := $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
 	$(eval tgt_abt_tst := $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
 	$(eval candidates := $(tgt_abt_trn) $(tgt_abt_tst) )
-	$(eval abt:=$(filter %analyticBaseTable.rdata, $(candidates)))
+	$(eval abt:=$(firstword $(filter %analyticBaseTable.rdata, $(candidates))))
 	$(R_INTERPRETER) $< $(abt)
 
 

@@ -34,8 +34,8 @@ train_data := $(patsubst %, %/data/processed/train.rdata, $(tasks))
 test_data  := $(patsubst %, %/data/processed/test.rdata, $(tasks))
 
 debug:
-	echo $(r_abt_scripts)
-	echo $(train_data)
+	echo $(r_abts)
+	echo $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $(r_abts))
 
 
 ## Train models against full training data
@@ -110,10 +110,11 @@ data/processed/petal_features.rdata: common/src/data/petal_features.r common/dat
 data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
 	Rscript $<
 
-$(r_abts): $(r_abt_scripts) common/data/processed/sepal_features.rdata common/data/processed/petal_features.rdata common/data/processed/species_target.rdata
-	$(eval outfile := $(filter %/AnalyticBaseTable.rdata, $@))
-	$(eval new := $(patsubst  %/AnalyticBaseTable.rdata, %/build_base_table.r, $(outfile)))
-	$(foreach abt_script, $(new), $(R_INTERPRETER) $(abt_script);)
+
+#r_abt_scripts := $(wildcard task*/src/data/build_base_table.r)
+#r_abts := $(patsubst %, %/data/processed/analyticBaseTable.rdata,  $(tasks))
+$(r_abts): $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $@) common/data/processed/sepal_features.rdata common/data/processed/petal_features.rdata common/data/processed/species_target.rdata
+	$(R_INTERPRETER) $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $@)
 
 
 #################################################################################

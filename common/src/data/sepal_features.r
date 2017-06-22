@@ -1,6 +1,6 @@
-source('src/utils/apply_transformations.r')
+source('common/src/utils/apply_transformations.r')
 
-sepals = read.csv("data/raw/iris_sepals.csv")
+sepals = read.csv("common/data/raw/iris_sepals.csv")
 
 feats = names(sepals)
 ignore_cols = c("Flower.Id")
@@ -15,4 +15,4 @@ transformations = list(
 addl_features = apply_transformations(sepals, feats, transformations)
 
 sepal_features = cbind(sepals, addl_features)
-save(sepal_features, file='data/processed/sepal_features.rdata')
+save(sepal_features, file='common/data/processed/sepal_features.rdata')

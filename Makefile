@@ -1,106 +1,18 @@
-.PHONY: refresh full_refresh
-
-#################################################################################
-# GLOBALS                                                                       #
-#################################################################################
+######http://www.linux-mag.com/id/2101/########
 
 R_INTERPRETER = Rscript
 PYTHON_INTERPRETER = python
 
-#################################################################################
-# COMMANDS                                                                      #
-#################################################################################
+.PHONY: all
 
-## assumes each task has a dedicated ABT. Alternatively, could target 
-## src/modeling/models/task*/foobar.r
-## Although tasks could theoretically share an ABT, we shouldn't rely on modeling
-## scripts for this since it would hinder pipelining exploration. If necessary,
-## a task with a shared ABT could just copy an existing ABT into a new folder or
-## create a symlink/shortcut to the existing ABT in the appropriate task dir.
-tasks := $(filter task%, $(shell ls))
-
-r_model_specs := $(wildcard */src/models/*.r)
-r_models  := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/models/"$$4"data"}' ) ) 
-
-r_test_acc := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_holdout_confusion.txt"}' ) )
-r_boots    := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_bootstrap.txt"}' ) )
-r_ts       := $(foreach spec, $(r_model_specs), $(shell echo $(spec) | awk -F "/" '{print $$1"/reports/"$$4"_tshuffle.txt"}' ) )
-r_all_acc  := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
-
-r_abt_scripts := $(wildcard task*/src/data/build_base_table.r)
-r_abts := $(patsubst %, %/data/processed/analyticBaseTable.rdata,  $(tasks))
-
-train_data := $(patsubst %, %/data/processed/train.rdata, $(tasks))
-test_data  := $(patsubst %, %/data/processed/test.rdata, $(tasks))
-
-debug: task0/data/processed/train.rdata
-	echo $(train_data)
-	echo $<
-	echo $(shell echo $$< | awk -F "/" '{print $$1"/data/processed/analyticBaseTable.rdata"}' )
-
-
-## Train models against full training data
-train: $(r_models)
-
-$(r_models): common/src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
-
-## Score models against test set
-test: $(r_all_acc) $(r_models) $(r_boots) $(r_ts) common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
-
-# I don't think there's anything I can do to fix this rule.
-$(r_all_acc): $(r_test_acc) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py
-	$(R_INTERPRETER) common/src/eval/all_models_accuracy.r
-
-$(r_test_acc): common/src/eval/eval_model.r $(r_models) $(test_data) common/src/eval/eval_db/dbapi.py
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
-
-## Bootstrap accuracy against training data for all models
-bootstrap:$(r_boots) common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
-
-$(r_boots): common/src/eval/bootstrap.r $(r_model_specs) $(train_data)
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
-
-## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
-target_shuffle:$(r_ts) common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
-
-$(r_ts): common/src/eval/target_shuffle.r $(r_model_specs) $(train_data)
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
-
-## Flush out all models and processed data, re-run full pipeline via 'test' target
-refresh:
-	find ./data/processed -type f ! -name '.gitkeep' -exec rm {} +
-	find ./models -type f ! -name '.gitkeep' -exec rm {} +
-	$(MAKE) test
-
-## Flush out raw data, , re-run full pipeline via 'test' target
-full_refresh:
-	find ./data/raw -type f ! -name '.gitkeep' -exec rm {} +
-	$(MAKE) test
-
-## Flush out all generated objects INCLUDING RAW DATA
 delete:
-	find ./data -type f ! -name '.gitkeep' -exec rm {} +
-	find ./models -type f ! -name '.gitkeep' -exec rm {} +
-	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
+	find ./dir* -type f -name 'foo.b' -exec rm {} +
+	find ./dir* -type f -name 'X.a' -exec rm {} +
+	find ./dir* -type f -name 'Y.a' -exec rm {} +
 
-$(train_data) $(test_data): common/src/data/train_test_split.r $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@)
-	$(eval tgt_abt_trn := $(patsubst %/data/processed/train.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
-	$(eval tgt_abt_tst := $(patsubst %/data/processed/test.rdata, %/data/processed/analyticBaseTable.rdata, $@) )
-	$(eval candidates := $(tgt_abt_trn) $(tgt_abt_tst) )
-	$(eval abt:=$(firstword $(filter %analyticBaseTable.rdata, $(candidates))))
-	$(R_INTERPRETER) $< $(abt)
-
-
-## Build the analytic base table by adding features to the raw data
-build_abt: $(r_abts)
-
-common/data/modeling_results.db:
-	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
-
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
+#######################
+## Common data rules ##
+#######################
 
 common/data/raw/iris_%.csv: common/src/data/get_raw_data.r
 	Rscript common/src/data/get_raw_data.r
@@ -114,14 +26,32 @@ common/data/processed/petal_features.rdata: common/src/data/petal_features.r com
 common/data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
 	Rscript $<
 
+#########################################################
+#########################################################
+######### Don't modify anything below this line #########
+#########################################################
+#########################################################
 
-$(r_abts): $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $@) common/data/processed/sepal_features.rdata common/data/processed/petal_features.rdata common/data/processed/species_target.rdata
-	$(R_INTERPRETER) $(patsubst %/data/processed/analyticBaseTable.rdata, %/src/data/build_base_table.r, $@)
+# Double colon rules allow included makefiles to redefine the target
+#all::
 
+## Score models against test set
+test::
 
-#################################################################################
-# Self Documenting Commands                                                     #
-#################################################################################
+## Build analytic base tables
+build_abt::
+
+# Output objects will be placed in the directory defined by _OUTTOP
+_OUTTOP ?= .
+
+# Every listed directory has to have a makefile in it, otherwise make will complain
+MODULES=$(filter task%, $(patsubst ./%/Makefile,%, $(shell find . -type f -name 'Makefile')))
+
+include $(addsuffix /Makefile,$(MODULES))
+
+#############################
+# Self Documenting Commands #
+#############################
 
 .DEFAULT_GOAL := show-help
 

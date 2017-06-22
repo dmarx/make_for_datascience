@@ -1,14 +1,14 @@
 include _header.mak
 
 ########################################
-## Directory-specific sources/targets ##
+#~ Directory-specific sources/targets ~#
 ########################################
 
 # SRCS := $(_MODULE)/%.foo
 # TGTS := $(_MODULE)/%.bar
 
 ################################
-## Directory-specific recipes ##
+#~ Directory-specific recipes ~#
 ################################
 
 #$(_MODULE)/%.bar: $(_MODULE)/%.foo

@@ -1,12 +1,12 @@
 ##########################################
-## Project-generic source/target search ##
+#~ Project-generic source/target search ~#
 ##########################################
 
 r_model_specs := $(wildcard $(_MODULE)/src/models/*.r)
 r_models  := $(patsubst %,$(_MODULE)/models/%data, $(notdir $(r_model_specs)) )
 
 ###########################
-## Project-generic rules ##
+#~ Project-generic rules ~#
 ###########################
 
 #$(_MODULE)/target/%.b: $(_MODULE)/source/%.a
@@ -20,7 +20,7 @@ $(_MODULE)/data/processed/analyticBaseTable.rdata: $(_MODULE)/src/data/build_bas
 
 
 #########################################################    
-######### Don't modify anything below this line #########
+########~ Don't modify anything below this line ~########
 #########################################################
 
 $(_MODULE)_TGTS := $(addprefix $($(_MODULE)_OUTPUT)/,$(TGTS))

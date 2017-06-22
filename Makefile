@@ -3,15 +3,8 @@
 R_INTERPRETER = Rscript
 PYTHON_INTERPRETER = python
 
-.PHONY: all
-
-delete:
-	find ./dir* -type f -name 'foo.b' -exec rm {} +
-	find ./dir* -type f -name 'X.a' -exec rm {} +
-	find ./dir* -type f -name 'Y.a' -exec rm {} +
-
 #######################
-## Common data rules ##
+#~ Common data rules ~#
 #######################
 
 common/data/raw/iris_%.csv: common/src/data/get_raw_data.r
@@ -26,14 +19,20 @@ common/data/processed/petal_features.rdata: common/src/data/petal_features.r com
 common/data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
 	Rscript $<
 
+delete:
+	find ./dir* -type f -name 'foo.b' -exec rm {} +
+	find ./dir* -type f -name 'X.a' -exec rm {} +
+	find ./dir* -type f -name 'Y.a' -exec rm {} +
+
+.PHONY: test build_abt delete
+
 #########################################################
 #########################################################
-######### Don't modify anything below this line #########
+########~ Don't modify anything below this line ~########
 #########################################################
 #########################################################
 
 # Double colon rules allow included makefiles to redefine the target
-#all::
 
 ## Score models against test set
 test::
@@ -45,13 +44,16 @@ build_abt::
 _OUTTOP ?= .
 
 # Every listed directory has to have a makefile in it, otherwise make will complain
+# We don't actually want to capture the common directory because _footer.mak will
+# assume we need to build an ABT for it and make problems for us.
+#MODULES=$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile')))
 MODULES=$(filter task%, $(patsubst ./%/Makefile,%, $(shell find . -type f -name 'Makefile')))
 
 include $(addsuffix /Makefile,$(MODULES))
 
-#############################
-# Self Documenting Commands #
-#############################
+###############################
+#~ Self Documenting Commands ~#
+###############################
 
 .DEFAULT_GOAL := show-help
 

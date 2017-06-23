@@ -1,3 +1,5 @@
+source("common/src/eval/basic_stats.r") # For "statistics" list
+
 target_shuffle = function(k, x, y, fitModel, stat, returnValues=TRUE, estimateSignificance=TRUE, ...){
   results = rep(NULL, k)
   for(i in 1:k){
@@ -20,18 +22,6 @@ target_shuffle = function(k, x, y, fitModel, stat, returnValues=TRUE, estimateSi
 ## Should try abstract this out.   ##
 ## Basically only changed one line ##
 #####################################
-
-accuracy = function(mod, X, Y){
-  mean(Y == predict_model(mod, X, type="class") )
-}
-
-rsqrd = function(mod, ...){
-  summary(mod)$r.squared
-}
-
-# Add more stats later
-statistics = list(accuracy = accuracy, 
-             rsqrd=rsqrd)
 
 args <- commandArgs(TRUE) ## reports/task0/logreg.r_tshuffle.txt accuracy
 if(length(args)>0){

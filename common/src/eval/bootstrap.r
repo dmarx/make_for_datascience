@@ -1,3 +1,5 @@
+source("common/src/eval/basic_stats.r") # For "statistics" list
+
 boot_stat = function(k, x, y, fitModel, stat){
   results = rep(NULL, k)
   full_dat = cbind(y,x)
@@ -14,18 +16,6 @@ boot_stat = function(k, x, y, fitModel, stat){
   }
   results
 }
-
-accuracy = function(mod, X, Y){
-  mean(Y == predict_model(mod, X, type="class") )
-}
-
-rsqrd = function(mod, ...){
-  summary(mod)$r.squared
-}
-
-# Add more stats later
-statistics = list(accuracy = accuracy, 
-             rsqrd=rsqrd)
 
 args <- commandArgs(TRUE)  ## reports/task0/logreg.r_bootstrap.txt accuracy
 if(length(args)>0){

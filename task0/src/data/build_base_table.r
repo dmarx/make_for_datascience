@@ -18,10 +18,7 @@ all_features = sepal_features
 
 load("common/data/processed/species_target.rdata")
 
-analyticBaseTable = merge(all_features, species_target[, c("Flower.Id", "Species")])
-old_names = names(analyticBaseTable)
-ix = which(old_names == "Species")
-names(analyticBaseTable)[ix] = "target"
+analyticBaseTable = merge(all_features, species_target[, c("Flower.Id", "target")])
 
 ###########################
 ## Standardize col names ##

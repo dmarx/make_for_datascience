@@ -10,8 +10,17 @@ My original intention was for this demo to be extremely minimalistic, but as I h
 
 This is very much a work in progress, which is why there's basically no documentation on how it works. In the near future I'll add documentation explaining how to use this, how to expand on it, how it works, and lessons learned constructing this system.
 
-## Motivation
+## How could I extend this to use in my own projects?
 
+1. Define functions that pull in the "common" data. In this project, this is `common/src/data/get_raw_data.r`.
+2. Define scripts that perform your feature and target engineering. In this project, these are `petal_features.r`, `sepal_features.r`, and `species_target.r`
+3. Define the pipeline for processing the common data in `common/Makefile`.
+4. Create a separate folder for each modeling task.
+5. Specify how to build the base table for each task in `./<taskName>/src/data/build_base_table.r` (if you're just going to copy this framework outright, right now it only supports R. I'll add python support soon).
+6. For each model you want to try, write a `./<taskName>/src/models/<modelName>.r` script that contains at least the two functions, named `train_model()` and `predict_model()`
+7. Create a `./<taskName>/Makefile`. This needs to have `include _header.mak` at the top and `include _footer.mak` at the bottom, but otherwise can be empty. Optionally, this file can be used to set project-specific rules, or variables, such as specifying which statistic to use for permutation testing (see `task0/Makefile`).
+
+## Motivation
 
 This system is motivated by specific (sometimes painful) experiences I've had collaborating with other people on projects. Here are a few of the situations I'm hoping to address:
 
@@ -46,3 +55,4 @@ This system is motivated by specific (sometimes painful) experiences I've had co
 To address these relationships, the raw data is pulled into a "common" area. Features are also engineered in the common area as well. Each task is then characterized by the script that defines its ABT, a collection of model specifications (a spec defines two functions: one that trains a model, and one that generates scores), and choices about which evaluations to perform. The selected evaluations are performed on all models for a given task. Evaluation scripts are defined in the common area, so need only be linked to a task by pattern rules indicating which evaluations to run on all of that task's models. 
 
 Default pattern rules are provided to capture the generalized components of the pipeline, which for the moment are all somewhat downstream: ABT-> models -> evaluations. I'd like to abstract out connecting features to ABTs in a similar way to how I've abstracted out linking models to ABTs (by just dropping model specs in a folder) but I haven't figured out a clean way to accomplish that yet.
+

@@ -36,6 +36,7 @@ delete:
 
 ## Score models against test set
 test::
+	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
 
 ## Build analytic base tables
 build_abt::

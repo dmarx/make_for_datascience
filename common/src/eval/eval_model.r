@@ -26,5 +26,6 @@ m$field_name = paste0(m$Y, "_", m$scored)
 m$value = m$Freq
 m = m[,-c(1:3)]
 
-log_model_result(paste0(task_name, "/", mod_name), "holdout_confusion", m)
+result_name = "holdout_confusion"
+log_model_result(task_name, mod_name, result_name, m)
 dbDisconnect(conn)

@@ -8,17 +8,19 @@ conn = dbConnect(SQLite(), "common/data/modeling_results.db")
 commit_id = system("git rev-parse HEAD", intern=TRUE)
 current_date = Sys.time()
 
-get_exp_id = function(mod_name){
+get_exp_id = function(task_name, mod_name){
   qry = "
     select id from experiments 
-    where model_name = ?
+    where 1=1
+    and task_name = ?
+    and model_name = ?
     and commit_id = ?
   "
-  payload = data.frame(mod_name, commit_id)
+  payload = data.frame(task_name, mod_name, commit_id)
   exp_id = dbGetPreparedQuery(conn, qry, bind.data=payload)[1,1]
   if(is.na(exp_id)){
     insrt = "
-      INSERT into experiments (model_name, commit_id, created_date) VALUES (?,?,?)
+      INSERT into experiments (task_name, model_name, commit_id, created_date) VALUES (?,?,?,?)
     "
     payload2 = payload; payload2$created_date = current_date
     dbSendPreparedQuery(conn, insrt, bind.data=payload2)
@@ -74,8 +76,8 @@ insert_results_helper=function(result_id, payload, type){
   }
 }
 
-log_model_result = function(model_name, result_name, results){
-  exp_id = suppressWarnings(get_exp_id(model_name))
+log_model_result = function(task_name, model_name, result_name, results){
+  exp_id = suppressWarnings(get_exp_id(task_name, model_name))
   res_id = suppressWarnings(get_result_id(exp_id, result_name))
   suppressWarnings(insert_results(res_id, results))
 }

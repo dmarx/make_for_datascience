@@ -54,6 +54,6 @@ if(length(args)>0){
   result_name = paste("target_shuffle",stat_name, k, sep="_") 
   m = prep_results(agg_results)
 
-  log_model_result(paste0(task_name, '/', mod_name), result_name, m)
+  log_model_result(task_name, mod_name, result_name, m)
   dbDisconnect(conn)
 }

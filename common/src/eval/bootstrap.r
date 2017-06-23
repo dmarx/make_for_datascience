@@ -50,6 +50,6 @@ if(length(args)>0){
   m$field_name = gsub("X([0-9]{1,2})\\.$", "\\1%", m$field_name)
   m$field_name = gsub("X([0-9]{1,2}\\.[0-9]+)$", "\\1%", m$field_name)
   
-  log_model_result(paste0(task_name, "/", mod_name), result_name, m)
+  log_model_result(task_name, mod_name, result_name, m)
   dbDisconnect(conn)
 }

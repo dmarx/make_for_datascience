@@ -1,5 +1,6 @@
 CREATE TABLE experiments
     (id                INTEGER PRIMARY KEY AUTOINCREMENT
+    ,task_name         TEXT
     ,model_name        TEXT
     ,commit_id         TEXT
     ,created_date      DATE

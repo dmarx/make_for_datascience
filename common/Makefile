@@ -10,6 +10,10 @@ test:: common/data/modeling_results.db
 common/data/modeling_results.db:common/src/eval/eval_db/dbapi.py
 	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
 
+#~ Don't edit anything above this line ~#
+
+#~ Put the common data pipeline below ~#
+    
 ######################
 #~ Getting raw data ~#
 ######################

@@ -1,4 +1,4 @@
-﻿## Minimal demo of Gnu Make data analytics pipeline
+﻿## Demonstration of a fairly robust data science pipeline using Gnu Make
 
 To see a list of commands, run: 
 
@@ -8,7 +8,7 @@ The makefile is designed to intelligently construct the modeling pipeline.
 
 My original intention was for this demo to be extremely minimalistic, but as I have expanded it to increasingly approximate and accomodate the complexity of a real data science project, it has spiraled into something of a self-contained system. I'm very pleased with the result, but it does require adhering to some project standards and utilizes a few fancy Make tricks. Someone building on this demo to use on their own project absolutely wouldn't be precluded from incorporating their own make rules, but one of my goals is to minimize the amount someone using this system would need to play with the makefile.
 
-This is very much a work in progress, which is why there's basically no documentation on how it works. In the near future (i.e. after the system has stabilized a bit more and I'm satisfied that I've addressed all the use cases I'm targetting) I'll add documentation explaining both how to use this, how to expand on it, how it works, and lessons learned constructing this system.
+This is very much a work in progress, which is why there's basically no documentation on how it works. In the near future I'll add documentation explaining how to use this, how to expand on it, how it works, and lessons learned constructing this system.
 
 ## Motivation
 
@@ -25,6 +25,7 @@ This system is motivated by specific (sometimes painful) experiences I've had co
 
 * The following are the entities we're concerned with in a data science pipeline:
   * Raw data getters
+  * the raw data
   * features
   * analytic base tables
   * modeling tasks

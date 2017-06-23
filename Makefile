@@ -34,8 +34,10 @@ delete:
 
 # Double colon rules allow included makefiles to redefine the target
 
-## Score models against test set
-test::
+## Evaluate models
+test:: common/data/modeling_results.db
+
+common/data/modeling_results.db:common/src/eval/eval_db/dbapi.py
 	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
 
 ## Build analytic base tables
@@ -47,8 +49,7 @@ _OUTTOP ?= .
 # Every listed directory has to have a makefile in it, otherwise make will complain
 # We don't actually want to capture the common directory because _footer.mak will
 # assume we need to build an ABT for it and make problems for us.
-#MODULES=$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile')))
-MODULES=$(filter task%, $(patsubst ./%/Makefile,%, $(shell find . -type f -name 'Makefile')))
+MODULES=$(filter-out common,$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile'))))
 
 include $(addsuffix /Makefile,$(MODULES))
 

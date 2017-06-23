@@ -10,11 +10,14 @@ abt_script := src/data/build_base_table.r
 r_model_specs := $(wildcard $(_MODULE)/src/models/*.r)
 r_mod_names := $(notdir $(r_model_specs))
 
+r_test_acc := $(patsubst %,reports/%_holdout_confusion.txt, $(r_mod_names))
+
 TGTS += $(abt) $(train_data) $(test_data) 
 TGTS += $(patsubst %,models/%data, $(r_mod_names))
-TGTS += $(patsubst %,reports/%_holdout_confusion.txt, $(r_mod_names))
+TGTS += $(r_test_acc)
 TGTS += $(patsubst %,reports/%_bootstrap.txt, $(r_mod_names))
 TGTS += $(patsubst %,reports/%_tshuffle.txt, $(r_mod_names))
+TGTS += reports/all_models_accuracy.txt
 
 ###########################
 #~ Project-generic rules ~#
@@ -41,6 +44,9 @@ TGTS += $(patsubst %,reports/%_tshuffle.txt, $(r_mod_names))
 # We can extract the task dir from $@ in the recipe, and then use $(eval ) to get
 # the directory-specific value we need inside the recipe.
 $(_MODULE)_EVAL_METRIC := $(_EVAL_METRIC)
+
+$(_MODULE)/reports/all_models_accuracy.txt: $(addprefix $(_MODULE)/,$(r_test_acc)) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py
+	$(R_INTERPRETER) common/src/eval/all_models_accuracy.r
 
 $(_MODULE)/reports/%.r_tshuffle.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/target_shuffle.r common/src/eval/eval_db/dbapi.py common/src/eval/basic_stats.r
 	$(eval _dir := $(patsubst %/reports/,%, $(dir $@)))

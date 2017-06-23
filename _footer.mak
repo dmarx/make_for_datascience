@@ -19,7 +19,10 @@ abt_script := src/data/build_base_table.r
 
 #r_test_acc := $(patsubst %,$(_MODULE)/results/%_holdout_confusion.txt, r_mod_names)
 
-TGTS := $(abt) $(train_data) $(test_data) $(patsubst %,models/%data, $(r_mod_names))
+TGTS += $(abt) $(train_data) $(test_data) 
+TGTS += $(patsubst %,models/%data, $(r_mod_names))
+TGTS += $(patsubst %,reports/%_holdout_confusion.txt, $(r_mod_names))
+
 ###########################
 #~ Project-generic rules ~#
 ###########################
@@ -42,13 +45,12 @@ TGTS := $(abt) $(train_data) $(test_data) $(patsubst %,models/%data, $(r_mod_nam
 
 ###########################################
 
-#$(_MODULE)/results/%_holdout_confusion.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/eval_model.r common/src/eval/eval_db/dbapi.py
+$(_MODULE)/reports/%.r_holdout_confusion.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/eval_model.r common/src/eval/eval_db/dbapi.py
 ####	$(R_INTERPRETER) common/src/eval/eval_model.r $< $@ ### Would prob make more sense if I passed in the model than the output
-#	$(R_INTERPRETER) common/src/eval/eval_model.r $@
+	$(R_INTERPRETER) common/src/eval/eval_model.r $@
 
-#$(r_models): common/src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
+
 $(_MODULE)/models/%.rdata: $(_MODULE)/src/models/%.r common/src/utils/train_and_save_model.r  $(_MODULE)/$(train_data)
-#	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
 	$(R_INTERPRETER) common/src/utils/train_and_save_model.r $@
 
 $(_MODULE)/$(train_data) $(_MODULE)/$(test_data): $(_MODULE)/$(abt) common/src/data/train_test_split.r

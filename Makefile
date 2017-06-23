@@ -8,7 +8,7 @@ delete:
 	find ./dir* -type f -name 'X.a' -exec rm {} +
 	find ./dir* -type f -name 'Y.a' -exec rm {} +
 
-.PHONY: test build_abt delete
+.PHONY: test build_abt delete taskName
 
 #########################################################
 #########################################################
@@ -23,6 +23,11 @@ test::
 
 ## Build analytic base tables
 build_abt::
+
+## E.g. "make common" or "make task0". Build just the targets for ./subdir 
+subdir:
+	@echo
+	@echo "This isn't a real make target. Specify the name of the subfolder which comprises the modeling task, e.g. 'make task0'"
 
 # Output objects will be placed in the directory defined by _OUTTOP
 _OUTTOP ?= .

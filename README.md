@@ -10,6 +10,18 @@ My original intention was for this demo to be extremely minimalistic, but as I h
 
 This is very much a work in progress, which is why there's basically no documentation on how it works. In the near future I'll add documentation explaining how to use this, how to expand on it, how it works, and lessons learned constructing this system.
 
+## Features of this system
+
+* Running the `test` target will cause make to rebuild everything downstream of any changes, and only those things that were affected by the change.
+* Can also rebuild just specific files and their dependencies.
+* The only Gnu Make rules an analyst would need to write are for the most upstream data processing (up to constructing the analytic base table). Everything else is inferred automatically.
+* For every base table, the pipeline will automatically construct a training set and a holdout set.
+* Adding a script defining a model to `./<taskName>/src/models` is sufficient to the model to the pipeline.
+* For every model, the pipeline will evaluate the model via bootstrap, target shuffling (permutation testing), and the holdout confusion matrix. Default behavior is to calculate bootstrap/target shuffled accuracy, but this statistic can be configured on a per-task basis. This ensures that all models for a given modeling task are evaluated against the same data. 
+* For each model evaluation criteria, a report is generated. Additionally, evaluation results are stored in a database that associates the results to the most current git commit. 
+* For every model, a model object trained against the training set will be generated. If models need to be rebuilt, they can optionally be archived.
+* All that's required to define a new modeling task is to create a folder for the task, and add a makefile with two includes in it, define how to build the base table from the common processed data, and add model specifications to the appropriate folder.
+
 ## How could I extend this to use in my own projects?
 
 1. Define functions that pull in the "common" data. In this project, this is `common/src/data/get_raw_data.r`.

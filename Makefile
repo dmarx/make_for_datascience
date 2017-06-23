@@ -1,123 +1,59 @@
-.PHONY: refresh full_refresh
-
-#################################################################################
-# GLOBALS                                                                       #
-#################################################################################
+######http://www.linux-mag.com/id/2101/########
 
 R_INTERPRETER = Rscript
 PYTHON_INTERPRETER = python
 
-#################################################################################
-# COMMANDS                                                                      #
-#################################################################################
+#######################
+#~ Common data rules ~#
+#######################
 
-## assumes each task has a dedicated ABT. Alternatively, could target 
-## src/modeling/models/task*/foobar.r
-## Although tasks could theoretically share an ABT, we shouldn't rely on modeling
-## scripts for this since it would hinder pipelining exploration. If necessary,
-## a task with a shared ABT could just copy an existing ABT into a new folder or
-## create a symlink/shortcut to the existing ABT in the appropriate task dir.
-tasks := $(filter task%, $(patsubst src/data/%, %, $(shell find src/data -type d)))
+common/data/raw/iris_%.csv: common/src/data/get_raw_data.r
+	Rscript common/src/data/get_raw_data.r
 
-r_model_specs := $(wildcard src/modeling/models/task*/*.r)
-r_models  := $(patsubst src/modeling/models/%.r, models/%.rdata, $(r_model_specs))
+common/data/processed/sepal_features.rdata: common/src/data/sepal_features.r common/data/raw/iris_sepals.csv
+	Rscript $<
 
-r_test_acc := $(patsubst src/modeling/models/%, reports/%_holdout_confusion.txt, $(r_model_specs))
-r_boots    := $(patsubst src/modeling/models/%, reports/%_bootstrap.txt, $(r_model_specs))
-r_ts       := $(patsubst src/modeling/models/%, reports/%_tshuffle.txt,  $(r_model_specs))
-r_all_acc  := $(patsubst %, reports/%/all_models_accuracy.txt,  $(tasks))
+common/data/processed/petal_features.rdata: common/src/data/petal_features.r common/data/raw/iris_petals.csv
+	Rscript $<
 
-r_abt_scripts := $(wildcard src/data/task*/build_base_table.r)
-r_abts := $(patsubst src/data/%/build_base_table.r, data/processed/%/analyticBaseTable.rdata, $(r_abt_scripts))
+common/data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
+	Rscript $<
 
-train_data := $(patsubst %, data/processed/%/train.rdata, $(tasks))
-test_data  := $(patsubst %, data/processed/%/test.rdata, $(tasks))
+delete:
+	find ./dir* -type f -name 'foo.b' -exec rm {} +
+	find ./dir* -type f -name 'X.a' -exec rm {} +
+	find ./dir* -type f -name 'Y.a' -exec rm {} +
 
-debug:
-	echo $(r_abts)
+.PHONY: test build_abt delete
 
+#########################################################
+#########################################################
+########~ Don't modify anything below this line ~########
+#########################################################
+#########################################################
 
-
-## Train models against full training data
-train: $(r_models)
-
-$(r_models): src/utils/train_and_save_model.r $(r_model_specs) $(train_data)
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
+# Double colon rules allow included makefiles to redefine the target
 
 ## Score models against test set
-test: $(r_all_acc) $(r_models) $(r_boots) $(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+test::
 
-$(r_all_acc): $(r_test_acc) src/eval/all_models_accuracy.r src/eval/eval_db/dbapi.py
-	$(R_INTERPRETER) src/eval/all_models_accuracy.r
+## Build analytic base tables
+build_abt::
 
-$(r_test_acc): src/eval/eval_model.r $(r_models) $(test_data) src/eval/eval_db/dbapi.py
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
+# Output objects will be placed in the directory defined by _OUTTOP
+_OUTTOP ?= .
 
-## Bootstrap accuracy against training data for all models
-bootstrap:$(r_boots) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
+# Every listed directory has to have a makefile in it, otherwise make will complain
+# We don't actually want to capture the common directory because _footer.mak will
+# assume we need to build an ABT for it and make problems for us.
+#MODULES=$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile')))
+MODULES=$(filter task%, $(patsubst ./%/Makefile,%, $(shell find . -type f -name 'Makefile')))
 
-$(r_boots): src/eval/bootstrap.r $(r_model_specs) $(train_data)
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
+include $(addsuffix /Makefile,$(MODULES))
 
-## Target shuffle accuracy against training data for all models (to estimate significance for accuracy)
-target_shuffle:$(r_ts) src/eval/eval_db/dbapi.py src/eval/eval_db/dbapi.r
-
-$(r_ts): src/eval/target_shuffle.r $(r_model_specs) $(train_data)
-	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile) accuracy;)
-
-## Flush out all models and processed data, re-run full pipeline via 'test' target
-refresh:
-	find ./data/processed -type f ! -name '.gitkeep' -exec rm {} +
-	find ./models -type f ! -name '.gitkeep' -exec rm {} +
-	$(MAKE) test
-
-## Flush out raw data, , re-run full pipeline via 'test' target
-full_refresh:
-	find ./data/raw -type f ! -name '.gitkeep' -exec rm {} +
-	$(MAKE) test
-
-## Flush out all generated objects INCLUDING RAW DATA
-delete:
-	find ./data -type f ! -name '.gitkeep' -exec rm {} +
-	find ./models -type f ! -name '.gitkeep' -exec rm {} +
-	find ./reports -type f ! -name '.gitkeep' -exec rm {} +
-
-$(train_data) $(test_data): src/data/train_test_split.r $(r_abts)
-	$(eval new := $(filter %/AnalyticBaseTable.rdata, $?))
-	$(foreach abt, $(new), $(R_INTERPRETER) $< $(abt);)
-
-
-## Build the analytic base table by adding features to the raw data
-build_abt: $(r_abts)
-
-data/modeling_results.db:
-	$(PYTHON_INTERPRETER) src/eval/eval_db/dbapi.py
-
-#################################################################################
-# PROJECT RULES                                                                 #
-#################################################################################
-
-data/raw/iris_%.csv: src/data/get_raw_data.r
-	Rscript src/data/get_raw_data.r
-
-data/processed/sepal_features.rdata: src/data/sepal_features.r data/raw/iris_sepals.csv
-	Rscript $<
-
-data/processed/petal_features.rdata: src/data/petal_features.r data/raw/iris_petals.csv
-	Rscript $<
-
-data/processed/species_target.rdata: src/data/species_target.r data/raw/iris_species.csv
-	Rscript $<
-
-$(r_abts): $(r_abt_scripts) data/processed/sepal_features.rdata data/processed/petal_features.rdata data/processed/species_target.rdata
-	$(eval outfile := $(filter %/AnalyticBaseTable.rdata, $@))
-	$(eval new := $(patsubst  %/AnalyticBaseTable.rdata, %/build_base_table.r, $(outfile)))
-	$(foreach abt_script, $(new), $(R_INTERPRETER) $(abt_script);)
-
-
-#################################################################################
-# Self Documenting Commands                                                     #
-#################################################################################
+###############################
+#~ Self Documenting Commands ~#
+###############################
 
 .DEFAULT_GOAL := show-help
 

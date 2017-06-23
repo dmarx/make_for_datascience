@@ -1,4 +1,6 @@
 *.rdata
-reports/*.txt
 *.Rhistory
-data/*.db
+common/data/*.db
+common/data/raw/*.csv
+task*/data/processed/*.txt
+task*/reports/*.txt

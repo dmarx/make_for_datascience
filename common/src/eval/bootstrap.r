@@ -11,7 +11,7 @@ boot_stat = function(k, x, y, fitModel, stat){
     xb = x[-ix,]
     yb = y[-ix]
     
-    mod = fitModel(xa, ya)
+    mod = suppressWarnings(fitModel(xa, ya))
     results[i] = stat(mod, xb, yb)
   }
   results

@@ -45,18 +45,18 @@ TGTS += reports/all_models_accuracy.txt
 # the directory-specific value we need inside the recipe.
 $(_MODULE)_EVAL_METRIC := $(_EVAL_METRIC)
 
-$(_MODULE)/reports/all_models_accuracy.txt: $(addprefix $(_MODULE)/,$(r_test_acc)) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py
+$(_MODULE)/reports/all_models_accuracy.txt: $(addprefix $(_MODULE)/,$(r_test_acc)) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 	$(R_INTERPRETER) common/src/eval/all_models_accuracy.r
 
-$(_MODULE)/reports/%.r_tshuffle.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/target_shuffle.r common/src/eval/eval_db/dbapi.py common/src/eval/basic_stats.r
+$(_MODULE)/reports/%.r_tshuffle.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/target_shuffle.r common/src/eval/basic_stats.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 	$(eval _dir := $(patsubst %/reports/,%, $(dir $@)))
 	$(R_INTERPRETER) common/src/eval/target_shuffle.r $@ $($(_dir)_EVAL_METRIC)
 
-$(_MODULE)/reports/%.r_bootstrap.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/bootstrap.r common/src/eval/eval_db/dbapi.py common/src/eval/basic_stats.r
+$(_MODULE)/reports/%.r_bootstrap.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/bootstrap.r common/src/eval/basic_stats.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 	$(eval _dir := $(patsubst %/reports/,%, $(dir $@)))
 	$(R_INTERPRETER) common/src/eval/bootstrap.r $@ $($(_dir)_EVAL_METRIC)
 
-$(_MODULE)/reports/%.r_holdout_confusion.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/eval_model.r common/src/eval/eval_db/dbapi.py
+$(_MODULE)/reports/%.r_holdout_confusion.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/eval_model.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 	$(R_INTERPRETER) common/src/eval/eval_model.r $@
 
 $(_MODULE)/models/%.rdata: $(_MODULE)/src/models/%.r common/src/utils/train_and_save_model.r  $(_MODULE)/$(train_data)

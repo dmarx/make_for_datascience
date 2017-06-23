@@ -4,13 +4,13 @@ target_shuffle = function(k, x, y, fitModel, stat, returnValues=TRUE, estimateSi
   results = rep(NULL, k)
   for(i in 1:k){
     shuffled_y = sample(y, length(y))  
-    mod = fitModel(x, shuffled_y)
+    mod = suppressWarnings(fitModel(x, shuffled_y))
     results[i] = stat(mod, x, shuffled_y, ...)
   }  
   retval=list()
   if(returnValues) retval$values = results
   if(estimateSignificance){
-    retval$mod = fitModel(x,y)
+    retval$mod = suppressWarnings(fitModel(x,y))
     retval$obs_stat = stat(retval$mod, x, y, ...)
     retval$est_pval = 1- mean(retval$obs_stat > results)
   }

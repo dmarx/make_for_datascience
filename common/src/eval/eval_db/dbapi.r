@@ -43,7 +43,7 @@ get_result_id = function(exp_id, result_name){
 }
 
 prep_results = function(results){
-  library(tidyr)
+  suppressWarnings(library(tidyr))
   n = nrow(results)
   m = gather(data.frame(row_id=1:n, results, stringsAsFactors=FALSE), "row_id")
   names(m) = c("row_id", "field_name", "value")
@@ -75,7 +75,7 @@ insert_results_helper=function(result_id, payload, type){
 }
 
 log_model_result = function(model_name, result_name, results){
-  exp_id = get_exp_id(model_name)
-  res_id = get_result_id(exp_id, result_name)
-  insert_results(res_id, results)
+  exp_id = suppressWarnings(get_exp_id(model_name))
+  res_id = suppressWarnings(get_result_id(exp_id, result_name))
+  suppressWarnings(insert_results(res_id, results))
 }

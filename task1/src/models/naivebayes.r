@@ -1,4 +1,4 @@
-library(e1071)
+suppressWarnings(library(e1071))
 
 train_model <- function(X, Y, ...){
   feats = read.table("task1/data/processed/abt_features.txt", stringsAsFactors=FALSE)[,1]

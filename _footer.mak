@@ -49,10 +49,6 @@ TGTS += reports/all_models_accuracy.txt
 #~  We can extract the task dir from $@ in the recipe, and then use $(eval ) to get
 #~  the directory-specific value we need inside the recipe.
 
-#########################################################    
-########~ Don't modify anything below this line ~########
-#########################################################
-
 $(_MODULE)_EVAL_METRIC := $(_EVAL_METRIC)
 
 $(_MODULE)/reports/all_models_accuracy.txt: $(addprefix $(_MODULE)/,$(r_test_acc)) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
@@ -77,10 +73,6 @@ $(_MODULE)/$(train_data) $(_MODULE)/$(test_data): $(_MODULE)/$(abt) common/src/d
 
 $(_MODULE)/$(abt): $(_MODULE)/$(abt_script) common/data/processed/sepal_features.rdata common/data/processed/petal_features.rdata common/data/processed/species_target.rdata
 	$(R_INTERPRETER) $<
-
-####################################################################
-########~ DEFINITELY Don't modify anything below this line ~########
-####################################################################
 
 $(_MODULE)_TGTS := $(addprefix $($(_MODULE)_OUTPUT)/,$(TGTS))
 

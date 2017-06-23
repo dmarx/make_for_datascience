@@ -14,6 +14,6 @@ sepals = iris[,c("Flower.Id", sepal_cols)]
 petals = iris[,c("Flower.Id", petal_cols)]
 species = iris[,c("Flower.Id", "Species")]
 
-write.csv(sepals,  file = "data/raw/iris_sepals.csv", row.names=FALSE)
-write.csv(petals,  file = "data/raw/iris_petals.csv", row.names=FALSE)
-write.csv(species, file = "data/raw/iris_species.csv", row.names=FALSE)
+write.csv(sepals,  file = "common/data/raw/iris_sepals.csv", row.names=FALSE)
+write.csv(petals,  file = "common/data/raw/iris_petals.csv", row.names=FALSE)
+write.csv(species, file = "common/data/raw/iris_species.csv", row.names=FALSE)

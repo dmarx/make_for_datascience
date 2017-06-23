@@ -21,9 +21,18 @@ TGTS := $(abt) $(train_data) $(test_data)
 #~ Project-generic rules ~#
 ###########################
 
+## THIS IS GOOD. Using $(_MODULE)/ in the rule works as expected
 #$(_MODULE)/target/%.b: $(_MODULE)/source/%.a
 #	./operation1.sh $< $@
 
+### THIS IS BAD. Using $(_MODULE)/ in the recipe causes unexpected behavior. The rule will likely
+### Be repeated for each directory it should run for, but will only evaluate the recipe for the 
+### last directory processed.
+#$(_MODULE)/target/%.b: $(_MODULE)/source/%.a $(_MODULE)/operation1.sh
+#	$(_MODULE)/operation1.sh $< $@
+
+$(r_test_acc): common/src/eval/eval_model.r $(r_models) $(test_data) common/src/eval/eval_db/dbapi.py
+	$(foreach outfile, $@, $(R_INTERPRETER) $< $(outfile);)
 
 
 $(_MODULE)/$(train_data) $(_MODULE)/$(test_data): $(_MODULE)/$(abt) common/src/data/train_test_split.r

@@ -65,8 +65,14 @@ $(_MODULE)/reports/%.r_bootstrap.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(tes
 $(_MODULE)/reports/%.r_holdout_confusion.txt: $(_MODULE)/models/%.rdata $(_MODULE)/$(test_data) common/src/eval/eval_model.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 	$(R_INTERPRETER) common/src/eval/eval_model.r $@
 
-$(_MODULE)/models/%.rdata: $(_MODULE)/src/models/%.r common/src/utils/train_and_save_model.r  $(_MODULE)/$(train_data)
+
+$(_MODULE)_ARCHIVE := $(ARCHIVE)
+
+$(_MODULE)/models/%.rdata: $(_MODULE)/src/models/%.r common/src/utils/train_and_save_model.r $(_MODULE)/$(train_data) common/src/utils/archive_model.r
+	$(eval _dir := $(patsubst %/models/,%, $(dir $@)))
+	if [ "$($(_dir)_ARCHIVE)" = "TRUE" ]; then $(R_INTERPRETER) common/src/utils/archive_model.r $@; fi
 	$(R_INTERPRETER) common/src/utils/train_and_save_model.r $@
+	
 
 $(_MODULE)/$(train_data) $(_MODULE)/$(test_data): $(_MODULE)/$(abt) common/src/data/train_test_split.r
 	$(R_INTERPRETER) common/src/data/train_test_split.r $<

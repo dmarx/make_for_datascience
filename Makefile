@@ -18,7 +18,7 @@ delete:
 
 # Double colon rules allow included makefiles to redefine the target
 
-## Evaluate models
+## Evaluate models. Set "ARCHIVE=TRUE" to archive old models that may be rebuilt
 test::
 
 ## Build analytic base tables
@@ -26,6 +26,10 @@ build_abt::
 
 # Output objects will be placed in the directory defined by _OUTTOP
 _OUTTOP ?= .
+
+# By default, don't archive models.
+ARCHIVE ?= FALSE
+ARCHIVE :=$(strip $ARCHIVE)
 
 # Every listed directory has to have a makefile in it, otherwise make will complain
 MODULES=$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile')))

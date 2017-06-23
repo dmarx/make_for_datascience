@@ -4,3 +4,4 @@ common/data/*.db
 common/data/raw/*.csv
 task*/data/processed/*.txt
 task*/reports/*.txt
+task*/models/**

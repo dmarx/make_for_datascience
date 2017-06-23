@@ -3,22 +3,6 @@
 R_INTERPRETER = Rscript
 PYTHON_INTERPRETER = python
 
-#######################
-#~ Common data rules ~#
-#######################
-
-common/data/raw/iris_%.csv: common/src/data/get_raw_data.r
-	Rscript common/src/data/get_raw_data.r
-
-common/data/processed/sepal_features.rdata: common/src/data/sepal_features.r common/data/raw/iris_sepals.csv
-	Rscript $<
-
-common/data/processed/petal_features.rdata: common/src/data/petal_features.r common/data/raw/iris_petals.csv
-	Rscript $<
-
-common/data/processed/species_target.rdata: common/src/data/species_target.r common/data/raw/iris_species.csv
-	Rscript $<
-
 delete:
 	find ./dir* -type f -name 'foo.b' -exec rm {} +
 	find ./dir* -type f -name 'X.a' -exec rm {} +
@@ -35,10 +19,7 @@ delete:
 # Double colon rules allow included makefiles to redefine the target
 
 ## Evaluate models
-test:: common/data/modeling_results.db
-
-common/data/modeling_results.db:common/src/eval/eval_db/dbapi.py
-	$(PYTHON_INTERPRETER) common/src/eval/eval_db/dbapi.py
+test::
 
 ## Build analytic base tables
 build_abt::
@@ -47,9 +28,7 @@ build_abt::
 _OUTTOP ?= .
 
 # Every listed directory has to have a makefile in it, otherwise make will complain
-# We don't actually want to capture the common directory because _footer.mak will
-# assume we need to build an ABT for it and make problems for us.
-MODULES=$(filter-out common,$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile'))))
+MODULES=$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile')))
 
 include $(addsuffix /Makefile,$(MODULES))
 

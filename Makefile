@@ -1,4 +1,5 @@
-######http://www.linux-mag.com/id/2101/########
+#~ Non-recursive Make implementation inspired by the tutorial at:
+#~   http://www.linux-mag.com/id/2101/
 
 R_INTERPRETER = Rscript
 PYTHON_INTERPRETER = python
@@ -40,6 +41,9 @@ ARCHIVE :=$(strip $ARCHIVE)
 MODULES=$(patsubst ./%/Makefile,%, $(filter ./%/Makefile,  $(shell find . -type f -name 'Makefile')))
 
 include $(addsuffix /Makefile,$(MODULES))
+
+#~ Code below lifted from the makefile provided by the Cookie Cutter Data science project:
+#~   https://github.com/drivendata/cookiecutter-data-science/blob/master/%7B%7B%20cookiecutter.repo_name%20%7D%7D/Makefile
 
 ###############################
 #~ Self Documenting Commands ~#

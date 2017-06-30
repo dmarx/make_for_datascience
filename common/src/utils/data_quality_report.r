@@ -220,4 +220,10 @@ if(1==0){
   stringify_report(reports)
   
   dump_reports(reports)
+  
+  source("common/src/eval/eval_db/dbapi.r")
+  
+  report = data_quality_report(iris)
+  log_data_profile('iris', report, 'path/to/file', description="DQR test")
+  dbDisconnect(conn)
 }

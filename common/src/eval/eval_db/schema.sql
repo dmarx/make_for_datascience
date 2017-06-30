@@ -47,10 +47,11 @@ CREATE TABLE fields
     );
 
 CREATE TABLE field_stats
-    (id         INTEGER PRIMARY KEY AUTOINCREMENT
-    ,field_id   INT
-    ,stat_name  TEXT
-    ,stat_value INT
+    (id           INTEGER PRIMARY KEY AUTOINCREMENT
+    ,field_id     INT
+    ,stat_name    TEXT
+    ,stat_value   INT
+    ,created_date DATE
     );
 
 -- This is just for capturing the "table" attribute of the
@@ -60,4 +61,5 @@ CREATE TABLE field_values_table
     ,field_id   INT
     ,value      TEXT
     ,freq       INT
+    ,created_date DATE
     );

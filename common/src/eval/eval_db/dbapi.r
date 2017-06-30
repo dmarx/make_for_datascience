@@ -179,13 +179,19 @@ log_dataset_stats_helper = function(dataset_id, report){
         field_id = get_field_id(dataset_id, f, f_meta[['datatype']])
         stats = setdiff(names(report[['columns']][[f]]), 'datatype')
         for(stat in stats){
-            if(stat!='table'){
+            if( !(stat %in% c('table', 'flag')) ){
                 payload$field_id = field_id
                 payload$stat_name = stat
                 payload$stat_value = f_meta[[stat]]
                 dbSendPreparedQuery(conn, base_insrt_stmt, payload)
-            } else {
+            } else if(stat=='table') {
                 log_table_results(field_id, f_meta[['table']] )
+            } else if(stat=='flag') {
+                flag_insrt_stmt = "
+                    INSERT INTO field_flags (field_id, flag, created_date) VALUES (?,?,?)
+                    "
+                flag_pyld = data.frame(payload$field_id, f_meta[['flag']], current_date)
+                dbSendPreparedQuery(conn, flag_insrt_stmt, flag_pyld)
             }
         }
     }

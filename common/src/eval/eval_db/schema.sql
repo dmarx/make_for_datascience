@@ -57,9 +57,17 @@ CREATE TABLE field_stats
 -- This is just for capturing the "table" attribute of the
 -- data profiling report
 CREATE TABLE field_values_table
-    (id         INTEGER PRIMARY KEY AUTOINCREMENT
-    ,field_id   INT
-    ,value      TEXT
-    ,freq       INT
+    (id           INTEGER PRIMARY KEY AUTOINCREMENT
+    ,field_id     INT
+    ,value        TEXT
+    ,freq         INT
+    ,created_date DATE
+    );
+
+-- this is probably redundant, I think any flags will (could) get added as field values
+CREATE TABLE field_flags
+    (id           INTEGER PRIMARY KEY AUTOINCREMENT
+    ,field_id     INT
+    ,flag         TEXT
     ,created_date DATE
     );

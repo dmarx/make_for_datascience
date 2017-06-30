@@ -225,8 +225,18 @@ if(1==0){
   
   report = data_quality_report(iris)
   log_data_profile('iris', report, 'path/to/file', description="DQR test")
+  
+  # Test behavior and db logging for flags
+  iris2 = iris
+  iris2$bad_col = NA
+  report2 = data_quality_report(iris2)
+  report2$flags
+  log_data_profile('iris2', report2, 'path/to/file', description="DQR test")
+  
   dbGetQuery(conn, "select * from datasets")
   dbGetQuery(conn, "select * from fields")
   dbGetQuery(conn, "select * from field_stats")
+  dbGetQuery(conn, "select * from field_flags")
+  
   dbDisconnect(conn)
 }

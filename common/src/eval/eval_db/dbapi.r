@@ -94,7 +94,8 @@ log_model_result = function(task_name, model_name, result_name, results){
 
 ############################################
 # Functions for logging dataset statistics #
-# Workhorse function: log_dataset_stats()  #
+#                                          #
+# Workhorse function: log_data_profile()   #
 ############################################
 
 # get_exp_id = function(task_name, mod_name){
@@ -104,7 +105,7 @@ log_model_result = function(task_name, model_name, result_name, results){
 # insert_results_helper=function(result_id, payload, type){
 # log_model_result = function(task_name, model_name, result_name, results){
 
-get_dataset_id = function(dataset_name, fpath, description=NULL){
+get_dataset_id = function(dataset_name, fpath, description=NA){
     qry = "
         select id from datasets 
         where 1=1
@@ -209,7 +210,7 @@ log_table_results = function(field_id, freq_table){
     }
 }
 
-log_data_profile = function(dataset_name, report, fpath, description=NULL){
+log_data_profile = function(dataset_name, report, fpath, description=NA){
     dataset_id = get_dataset_id(dataset_name, fpath, description)
     log_dataset_stats_helper(dataset_id, report)
 }

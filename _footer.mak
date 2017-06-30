@@ -18,6 +18,7 @@ TGTS += $(r_test_acc)
 TGTS += $(patsubst %,reports/%_bootstrap.txt, $(r_mod_names))
 TGTS += $(patsubst %,reports/%_tshuffle.txt, $(r_mod_names))
 TGTS += reports/all_models_accuracy.txt
+TGTS += reports/analyticBaseTable_data_profile.txt
 
 ###########################
 #~ Project-generic rules ~#
@@ -50,6 +51,9 @@ TGTS += reports/all_models_accuracy.txt
 #~  the directory-specific value we need inside the recipe.
 
 $(_MODULE)_EVAL_METRIC := $(_EVAL_METRIC)
+
+$(_MODULE)/reports/%_data_profile.txt: common/src/eval/profile_data.r $(_MODULE)/data/processed/%.rdata
+	$(R_INTERPRETER) common/src/eval/profile_data.r $@
 
 $(_MODULE)/reports/all_models_accuracy.txt: $(addprefix $(_MODULE)/,$(r_test_acc)) common/src/eval/all_models_accuracy.r common/src/eval/eval_db/dbapi.py common/src/eval/eval_db/dbapi.r
 	$(R_INTERPRETER) common/src/eval/all_models_accuracy.r

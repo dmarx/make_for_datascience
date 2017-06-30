@@ -225,5 +225,8 @@ if(1==0){
   
   report = data_quality_report(iris)
   log_data_profile('iris', report, 'path/to/file', description="DQR test")
+  dbGetQuery(conn, "select * from datasets")
+  dbGetQuery(conn, "select * from fields")
+  dbGetQuery(conn, "select * from field_stats")
   dbDisconnect(conn)
 }

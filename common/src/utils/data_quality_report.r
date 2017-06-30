@@ -185,7 +185,7 @@ dump_reports = function(reports, report_on_flags=TRUE, flags_only=FALSE, separat
 }
 
 if(1==0){
-  #data(iris)
+  data(iris)
   #test = data_quality_report(iris)
   #stringify_report(test)
   #data_quality_report(matrix())
@@ -194,9 +194,25 @@ if(1==0){
   setwd("Projects/Toy\ Projects/make_for_datascience")
   
   # Load all RData objs into environment  
-  dummy_ = lapply(list.files(), function(x) tryCatch(load(file=x, envir=.GlobalEnv), except=function(e) print("except"), warning=function(w) print("warning")))
+  #dummy_ = lapply(list.files(), function(x) tryCatch(load(file=x, envir=.GlobalEnv), except=function(e) print("except"), warning=function(w) print("warning")))
   
   # Calculate data quality reports
   reports = report_on_all_env_objs(detailed=TRUE)
-  dump_reports(reports, report_on_flags=TRUE)
+  #dump_reports(reports, report_on_flags=TRUE)
+  
+  names(reports[['iris']]) # "object_name" "dim"         "n"           "columns" 
+  
+  reports[['iris']][['object_name']] # iris
+  reports[['iris']][['dim']] # 150 5
+  reports[['iris']][['n']] # 150
+  
+  names(reports[['iris']][['columns']]) # "Sepal.Length" "Sepal.Width"  "Petal.Length" "Petal.Width"  "Species" 
+  
+  names(reports[['iris']][['columns']][['Sepal.Length']])
+  #[1] "datatype"    "length"      "uniques"     "min"         "max"         "mean"       
+  #[7] "median"      "sd"          "bad_records"
+  
+  names(reports[['iris']][['columns']][['Species']])
+  # [1] "datatype"    "length"      "uniques"     "table"       "bad_records" "empty"      
+  # [7] "minchars"    "maxchars"    "meanchars"   "nlevels"
 }

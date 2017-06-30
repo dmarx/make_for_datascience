@@ -215,4 +215,9 @@ if(1==0){
   names(reports[['iris']][['columns']][['Species']])
   # [1] "datatype"    "length"      "uniques"     "table"       "bad_records" "empty"      
   # [7] "minchars"    "maxchars"    "meanchars"   "nlevels"
+  
+  # This is basically for pretty-printing everything
+  stringify_report(reports)
+  
+  dump_reports(reports)
 }

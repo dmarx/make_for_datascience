@@ -20,7 +20,7 @@ current_date = Sys.time()
 
 get_exp_id = function(task_name, mod_name){
   qry = "
-    select id from experiments 
+    select id from experiments
     where 1=1
     and task_name = ?
     and model_name = ?
@@ -67,8 +67,8 @@ insert_results = function(result_id, results, overwrite=TRUE){
     dbSendQuery(conn, "DELETE FROM RESULTS_DATA_NUMERIC where result_id = ?", list(result_id))
     dbSendQuery(conn, "DELETE FROM RESULTS_DATA_TEXT    where result_id = ?", list(result_id))
   }
-  
-  # assumes "results" doesn't need to be melted 
+
+  # assumes "results" doesn't need to be melted
   is_numeric = !is.na(as.numeric(results$value))
   insert_results_helper(result_id, results[is_numeric,], 'NUMERIC')
   insert_results_helper(result_id, results[!is_numeric,], 'TEXT')
@@ -80,8 +80,9 @@ insert_results_helper=function(result_id, payload, type){
   if(nrow(payload)>0){
     dbWriteTable(conn, tbl_stg, payload, overwrite=TRUE)
     insrt = paste0("INSERT INTO ", tbl_tgt," (result_id, result_row, result_field, value) ",
-                   "select ",result_id, ", * from ", tbl_stg)                
-    dbSendPreparedQuery(conn, insrt, payload)
+                   "select ",result_id, ", * from ", tbl_stg)
+    #dbSendPreparedQuery(conn, insrt, payload)
+    dbSendQuery(conn, insrt) # we're using a staging table, not a bind query!
     dbRemoveTable(conn, tbl_stg)
   }
 }
@@ -107,7 +108,7 @@ log_model_result = function(task_name, model_name, result_name, results){
 
 get_dataset_id = function(dataset_name, fpath, description=NA){
     qry = "
-        select id from datasets 
+        select id from datasets
         where 1=1
         and name = ?
         and fpath = ?
@@ -130,7 +131,7 @@ get_dataset_id = function(dataset_name, fpath, description=NA){
 # out a generic function for doing this on any table and set of identifiers
 get_field_id = function(dataset_id, field_name, field_type=NULL){
     qry = "
-        select id from fields 
+        select id from fields
         where 1=1
         and dataset_id = ?
         and field_name = ?
@@ -152,28 +153,28 @@ get_field_id = function(dataset_id, field_name, field_type=NULL){
 # I really need to break this up into a bunch of different functions
 log_dataset_stats_helper = function(dataset_id, report){
     base_insrt_stmt = "
-        INSERT INTO field_stats (field_id, stat_name, stat_value, created_date) 
+        INSERT INTO field_stats (field_id, stat_name, stat_value, created_date)
         VALUES (?,?,?,?)
     "
 
     #source('common/src/utils/data_quality_report.r')
     #report = data_quality_report(dataset)
-    
+
     # 1. Log stats for full dataset
     general_id = get_field_id(dataset_id, "", "GENERAL")
-    
-    payload = data.frame(field_id = general_id, 
-                         stat_name  = 'n', 
+
+    payload = data.frame(field_id = general_id,
+                         stat_name  = 'n',
                          stat_value = report[['n']],
                          created_date = current_date)
     dbSendPreparedQuery(conn, base_insrt_stmt, payload)
-    
+
     for(i in 1:length(report[['dim']])){
         payload$stat_name  = paste0("dim_",i)
         payload$stat_value = report[['dim']][i]
         dbSendPreparedQuery(conn, base_insrt_stmt, payload)
     }
-    
+
     # 2. Log stats for each field
     for(f in names(report[['columns']])){
         f_meta = report[['columns']][[f]]
@@ -202,9 +203,9 @@ log_table_results = function(field_id, freq_table){
     insrt_stmt = "INSERT INTO field_values_table (field_id, value, freq, created_date) VALUES (?,?,?,?)"
     values = names(freq_table)
     for(v in values){
-        payload = data.frame(field_id = field_id, 
-                             value = v, 
-                             freq = freq_table[[v]], 
+        payload = data.frame(field_id = field_id,
+                             value = v,
+                             freq = freq_table[[v]],
                              created_date = current_date)
         dbSendPreparedQuery(conn, insrt_stmt, payload)
     }

@@ -51,8 +51,8 @@ ignore_cols = c("flower_id", "target", "species")
 all_col_names = names(analyticBaseTable)
 feats = all_col_names[-which(all_col_names %in% ignore_cols)]
 data_path = "task0/data/processed/"
-dir.create(data_path, showWarnings = FALSE)
-write.table(feats, file=paste0(data_path, "abt_features.txt"), 
+dir.create(data_path, showWarnings=FALSE, recursive=TRUE)
+write.table(feats, file=paste0(data_path, "abt_features.txt"),
             col.names=FALSE, row.names=FALSE, quote=FALSE)
 
 save(analyticBaseTable, file=paste0(data_path, "analyticBaseTable.rdata"))
